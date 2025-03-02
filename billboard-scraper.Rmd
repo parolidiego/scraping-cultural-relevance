@@ -8,6 +8,7 @@ date: "2025-03-02"
 #install.packages("xml2")
 library(xml2)
 library(httr)
+library(tidyverse)
 ```
 
 
@@ -17,14 +18,111 @@ set_config(user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537
 
 
 ```{r}
-link <- "https://www.billboard.com/charts/hot-100/2000-03-11/"
+link <- "https://www.billboard.com/charts/hot-100/2000-07-11/"
 
 link_read <- read_html(link)
 
-node <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // lrv-u-flex-grow-1 lrv-u-flex lrv-u-flex-direction-column lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light  lrv-u-padding-l-1@mobile-max']")
 
-song <- xml_text(xml_children(node)[1])
-artist <- xml_text(xml_children(node)[2])
+artistsong <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // lrv-u-flex-grow-1 lrv-u-flex lrv-u-flex-direction-column lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light  lrv-u-padding-l-1@mobile-max']")
 
+song <- xml_text(xml_children(artistsong)[1])
+artist <- xml_text(xml_children(artistsong)[2])
+
+
+image_url <- xml_find_all(link_read, "//div[@class='lrv-a-crop-1x1 a-crop-67x100@mobile-max']/img[@class='c-lazy-image__img lrv-u-background-color-grey-lightest lrv-u-width-100p lrv-u-display-block lrv-u-height-auto']")[[1]]
+image_url <- xml_attr(image_url, "src")
+
+
+# List of last week and number of weeks on chart (for all 100 songs) i.e. grey background
+weeks_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-background-color-white-064@mobile-max u-hidden@mobile-max']/span")
+
+# First column for the first row
+last_week <- xml_text(weeks_info[[1]])
+
+# Second column for the second row
+weeks_on_chart <- xml_text(weeks_info[[2]])
+
+
+# List of all 100 peak positions
+peak_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // a-chart-bg-color a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-background-color-grey-lightest lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-hidden@mobile-max']/span")
+peak <- xml_text(peak_info[[1]])
+
+```
+
+
+## Loop
+
+loop can be rebuilt to operate on a weekly basis instead of daily
+ 
+```{r}
+# Range of dates
+dates <- seq(as.Date("2000-01-01"), as.Date("2000-12-31"), by="day")
+
+# Initialize an empty list to store results
+results <- list()
+
+# Loop over dates
+for (date in dates) {
+  
+  # System sleep
+  Sys.sleep(2)
+  
+  # Format date for URL (YYYY-MM-DD)
+  date_str <- as.character(format(as.Date(date), "%Y-%m-%d"))
+  link <- paste0("https://www.billboard.com/charts/hot-100/", date_str, "/")
+  
+  # # chatgpt suggestion
+  # link_read <- tryCatch({
+  #   read_html(link)
+  # }, error = function(e) {
+  #   message(paste("Failed to read:", link))
+  #   return(NULL)
+  # })
+  # 
+  # if (is.null(link_read)) next
+
+  link_read <- read_html(link)
+  
+  artistsong <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // lrv-u-flex-grow-1 lrv-u-flex lrv-u-flex-direction-column lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light  lrv-u-padding-l-1@mobile-max']")
+  
+  song <- xml_text(xml_children(artistsong)[1])
+  artist <- xml_text(xml_children(artistsong)[2])
+  
+  
+  image_url <- xml_find_all(link_read, "//div[@class='lrv-a-crop-1x1 a-crop-67x100@mobile-max']/img[@class='c-lazy-image__img lrv-u-background-color-grey-lightest lrv-u-width-100p lrv-u-display-block lrv-u-height-auto']")[[1]]
+  image_url <- xml_attr(image_url, "src")
+  
+  
+  # List of last week and number of weeks on chart (for all 100 songs) i.e. grey background
+  weeks_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-background-color-white-064@mobile-max u-hidden@mobile-max']/span")
+  
+  # First column for the first row
+  last_week <- xml_text(weeks_info[[1]])
+  
+  # Second column for the second row
+  weeks_on_chart <- xml_text(weeks_info[[2]])
+  
+  
+  # List of all 100 peak positions
+  peak_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // a-chart-bg-color a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-background-color-grey-lightest lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-hidden@mobile-max']/span")
+  peak <- xml_text(peak_info[[1]])
+
+  # Group data in a tibble
+  data <- tibble(
+    date = date_str,
+    song = song,
+    artist = artist,
+    image_url = image_url,
+    last_week = last_week,
+    weeks_on_chart = weeks_on_chart,
+    peak = peak
+  )
+  
+  # Append to results list
+  results[[date_str]] <- data
+}
+
+# Combine all results into one dataframe
+final_dataset <- bind_rows(results)
 ```
 
