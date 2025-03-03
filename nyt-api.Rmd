@@ -1,0 +1,103 @@
+---
+title: "nyt-api"
+output: html_document
+date: "2025-03-03"
+---
+
+```{r setup, include=FALSE}
+# usethis::edit_r_environ()
+# file.edit("~/.Renviron")
+# Sys.getenv("API_KEY_NYT")
+```
+
+```{r}
+library(httr2)
+library(tidyverse)
+main_link <- "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+
+# We can definetely add sort = "relevance"
+data <- main_link |> 
+  request() |>
+  req_url_query("api-key" = Sys.getenv("API_KEY_NYT"), "begin_date" = 20200101, "end_date" = 20200102) |> 
+  req_perform() |> 
+  resp_body_json(simplifyVector = TRUE)
+```
+
+I am getting back only 10 articles it seems
+
+Indeed this is what it says online:
+The Article Search API returns a max of 10 results at a time. The meta node in the response contains the total number of matches ("hits") and the current offset. Use the page query parameter to paginate thru results (page=0 for results 1-10, page=1 for 11-20, ...). You can paginate thru up to 100 pages (1,000 results). If you get too many results try filtering by date range.
+
+Find here documentation: https://developer.nytimes.com/docs/articlesearch-product/1/overview
+
+
+```{r}
+data$response$docs # contains the data
+data$response$meta # contains the metadata
+```
+
+DOCS data:
+
+snippet = abstract = introductory sentence below headline
+
+web_url = link to the article
+
+lead_paragraph = first sentence
+
+print section = ???
+
+print page = I suppose at what page of the physical edition the article was??
+
+source = source??
+
+multimedia is a df I guess it contains all the info about picture (multimedia in fact) etc. that appear in every article ==> It seems pretty useless
+
+headline is a df as well. It contains very useful info
+  main = title of the article. IMPORTANT INFO
+  kicker = not sure what it is, but it seems like a section
+  contain_kicker = not sure
+  print_headline = I guess the title with which it appeared in the physical version IMPORTANT??
+  the rest seems useless
+
+Keywords a df containing all the important keywords for each article
+  name = type of keyword
+  value = the actual keyword itself
+  rank = rank??
+  
+pub_date = pubblication date with hours as well ==> might be useful
+
+document_type = filter between article and multimedia
+
+news_desk = important info about section
+section_name & subsection_name same as above basically. We might want to decide which one is the most useful
+
+byline is a datframe storing info about who wrote the article
+  original = reported as it appear on the article
+  person = builds a df of info about the author
+  organization = ?
+  
+type_of_material = could be helpful to select only news
+
+id = uri??
+
+word_count = number of words in the article
+
+
+
+META data
+
+hits = number of articles that match the query
+
+offset = ??
+
+time = ??
+
+
+
+```{r}
+data$response$docs$headline$main # returns all the headlines
+```
+
+
+
+
