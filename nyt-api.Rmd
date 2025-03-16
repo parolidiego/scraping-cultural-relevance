@@ -15,10 +15,10 @@ library(httr2)
 library(tidyverse)
 main_link <- "https://api.nytimes.com/svc/search/v2/articlesearch.json"
 
-# We can definetely add sort = "relevance"
+# Trying out a query to understand structure
 data <- main_link |> 
   request() |>
-  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), begin_date = 20200101, end_date = 20200131, fq = 'day_of_week: "Monday') |> 
+  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), begin_date = 20200101, end_date = 20200131) |> 
   req_perform() |> 
   resp_body_json(simplifyVector = TRUE)
 ```
@@ -95,21 +95,59 @@ time = ??
 
 
 ```{r}
-## Create function with date_1 and date_2 as arguments
+# It could be generalized even more by inserting a step parameter into the function
+dates_creator <- function(start, end) {
+  # To be provided as "yyyy-mm-dd"
+  
+  start_dates <- seq(as.Date(start), as.Date(end), by="4 days")
+  end_dates <- start_dates + 3
+  
+  start_dates <- start_dates |> 
+    as.character() %>%
+    str_remove_all(., "-") |> 
+    as.numeric()
+  
+  end_dates <- end_dates |> 
+    as.character() %>%
+    str_remove_all(., "-") |> 
+    as.numeric()
+  
+  list_dates <- list(start_dates, end_dates)
+  
+  return(list_dates)
+}
+
+dates <- dates_creator("2000-01-01", "2003-12-31")
+
+start_dates <- dates[[1]]
+start_dates
+end_dates <- dates[[2]]
+end_dates
+
+
 
 main_link <- "https://api.nytimes.com/svc/search/v2/articlesearch.json"
 
-ny_news <- function(date1, date2){
+# Not sure if we need anything to try to warn us of bad api calls
+ny_news <- function(start_date, end_date){
   Sys.sleep(12)
   
   data <- main_link |> 
   request() |>
-  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), begin_date = date1, end_date = date2, fq = 'print_page:1 AND print_section:"A"', ) |> 
+  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), 
+                begin_date = start_date,
+                end_date = end_date, 
+                fq = 'print_page:1 AND print_section:("A", "1") AND type_of_material:"News"',
+                sort = 'relevance') |>
   req_perform() |> 
   resp_body_json(simplifyVector = TRUE)
   
   news <- tibble(date = data$response$docs$pub_date,
-       headline = data$response$docs$headline$main)
+                 headline = data$response$docs$headline$main,
+                 print_headline = data$response$docs$headline$print_headline,
+                 abstract = data$response$docs$abstract,
+                 snippet = data$response$docs$snippet,
+                 lead_paragraph = data$response$docs$lead_paragraph)
   
   news <- news |> 
   mutate(date = str_remove_all(date,"T.+00$"),
@@ -123,38 +161,9 @@ ny_news <- function(date1, date2){
   return(news)
 }
 
-dates_creator <- function(start, end) {
+news <- map2_dfr(start_dates, end_dates, ny_news)
   
-  start_1 <- as.numeric(as_date(start))
-  end_1 <- as.numeric(as_date(end))
-  
-  start_2 <- as.numeric(as_date(start)) + 4
-  end_2 <- as.numeric(as_date(end)) + 4
-  
-  
-  dates_1 <- seq(start_1, by = 5, end_1) %>%
-    as_date(.) %>%
-    str_remove_all(., "-") |> 
-    as.numeric()
-  
-  dates_2 <- seq(start_2, by = 5, end_2) %>%
-    as_date(.) %>%
-    str_remove_all(., "-") |> 
-    as.numeric()
-  
-  dates <- list(dates_1, dates_2)
-  
-  return(dates)
-}
-
-try <- dates_creator("2001-01-01", "2002-12-31")
-
-dates_1 <- try[[1]]
-dates_2 <- try[[2]]
-
-news <- map2_dfr(dates_1, dates_2, ny_news)
-  
-  
+#write_csv(news, "data/nyt_database.csv")
 ```
 
 
