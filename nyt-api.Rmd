@@ -1,0 +1,171 @@
+---
+title: "nyt-api"
+output: html_document
+date: "2025-03-03"
+---
+
+```{r setup, include=FALSE}
+usethis::edit_r_environ()
+# file.edit("~/.Renviron")
+# Sys.getenv("API_KEY_NYT")
+```
+
+```{r}
+library(httr2)
+library(tidyverse)
+main_link <- "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+
+# Trying out a query to understand structure
+data <- main_link |> 
+  request() |>
+  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), begin_date = 20200101, end_date = 20200131) |> 
+  req_perform() |> 
+  resp_body_json(simplifyVector = TRUE)
+```
+
+I am getting back only 10 articles it seems
+
+Indeed this is what it says online:
+The Article Search API returns a max of 10 results at a time. The meta node in the response contains the total number of matches ("hits") and the current offset. Use the page query parameter to paginate thru results (page=0 for results 1-10, page=1 for 11-20, ...). You can paginate thru up to 100 pages (1,000 results). If you get too many results try filtering by date range.
+
+Find here documentation: https://developer.nytimes.com/docs/articlesearch-product/1/overview
+
+
+```{r}
+data$response$docs # contains the data
+data$response$meta # contains the metadata
+```
+
+DOCS data:
+
+snippet = abstract = introductory sentence below headline
+
+web_url = link to the article
+
+lead_paragraph = first sentence
+
+print section = ???
+
+print page = I suppose at what page of the physical edition the article was??
+
+source = source??
+
+multimedia is a df I guess it contains all the info about picture (multimedia in fact) etc. that appear in every article ==> It seems pretty useless
+
+headline is a df as well. It contains very useful info
+  main = title of the article. IMPORTANT INFO
+  kicker = not sure what it is, but it seems like a section
+  contain_kicker = not sure
+  print_headline = I guess the title with which it appeared in the physical version IMPORTANT??
+  the rest seems useless
+
+Keywords a df containing all the important keywords for each article
+  name = type of keyword
+  value = the actual keyword itself
+  rank = rank??
+  
+pub_date = pubblication date with hours as well ==> might be useful
+
+document_type = filter between article and multimedia
+
+news_desk = important info about section
+section_name & subsection_name same as above basically. We might want to decide which one is the most useful
+
+byline is a datframe storing info about who wrote the article
+  original = reported as it appear on the article
+  person = builds a df of info about the author
+  organization = ?
+  
+type_of_material = could be helpful to select only news
+
+id = uri??
+
+word_count = number of words in the article
+
+
+
+META data
+
+hits = number of articles that match the query
+
+offset = ??
+
+time = ??
+
+
+
+```{r}
+# It could be generalized even more by inserting a step parameter into the function
+dates_creator <- function(start, end) {
+  # To be provided as "yyyy-mm-dd"
+  
+  start_dates <- seq(as.Date(start), as.Date(end), by="4 days")
+  end_dates <- start_dates + 3
+  
+  start_dates <- start_dates |> 
+    as.character() %>%
+    str_remove_all(., "-") |> 
+    as.numeric()
+  
+  end_dates <- end_dates |> 
+    as.character() %>%
+    str_remove_all(., "-") |> 
+    as.numeric()
+  
+  list_dates <- list(start_dates, end_dates)
+  
+  return(list_dates)
+}
+
+dates <- dates_creator("2000-01-01", "2003-12-31")
+
+start_dates <- dates[[1]]
+start_dates
+end_dates <- dates[[2]]
+end_dates
+
+
+
+main_link <- "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+
+# Not sure if we need anything to try to warn us of bad api calls
+ny_news <- function(start_date, end_date){
+  Sys.sleep(12)
+  
+  data <- main_link |> 
+  request() |>
+  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), 
+                begin_date = start_date,
+                end_date = end_date, 
+                fq = 'print_page:1 AND print_section:("A", "1") AND type_of_material:"News"',
+                sort = 'relevance') |>
+  req_perform() |> 
+  resp_body_json(simplifyVector = TRUE)
+  
+  news <- tibble(date = data$response$docs$pub_date,
+                 headline = data$response$docs$headline$main,
+                 print_headline = data$response$docs$headline$print_headline,
+                 abstract = data$response$docs$abstract,
+                 snippet = data$response$docs$snippet,
+                 lead_paragraph = data$response$docs$lead_paragraph)
+  
+  news <- news |> 
+  mutate(date = str_remove_all(date,"T.+00$"),
+         date = as_date(date),
+         rank = row_number()) |> 
+  group_by(date) |> 
+  slice_min(rank) |> 
+  ungroup() |> 
+  select(-rank)
+  
+  return(news)
+}
+
+news <- map2_dfr(start_dates, end_dates, ny_news)
+  
+#write_csv(news, "data/nyt_database.csv")
+```
+
+
+
+
