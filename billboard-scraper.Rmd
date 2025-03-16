@@ -50,13 +50,20 @@ peak <- xml_text(peak_info[[1]])
 ```
 
 
+```{r}
+#Modifying artists and songs
+
+artists <- xml_find_all(link_read, "//li/h3[@id='title-of-a-story']")
+```
+
+
 ## Loop
 
 loop can be rebuilt to operate on a weekly basis instead of daily
  
 ```{r}
 # Range of dates
-dates <- seq(as.Date("2000-01-01"), as.Date("2000-12-31"), by="day")
+dates <- seq(as.Date("2000-01-01"), as.Date("2000-12-31"), by="week")
 
 # Initialize an empty list to store results
 results <- list()
@@ -70,16 +77,6 @@ for (date in dates) {
   # Format date for URL (YYYY-MM-DD)
   date_str <- as.character(format(as.Date(date), "%Y-%m-%d"))
   link <- paste0("https://www.billboard.com/charts/hot-100/", date_str, "/")
-  
-  # # chatgpt suggestion
-  # link_read <- tryCatch({
-  #   read_html(link)
-  # }, error = function(e) {
-  #   message(paste("Failed to read:", link))
-  #   return(NULL)
-  # })
-  # 
-  # if (is.null(link_read)) next
 
   link_read <- read_html(link)
   
@@ -101,7 +98,6 @@ for (date in dates) {
   
   # Second column for the second row
   weeks_on_chart <- xml_text(weeks_info[[2]])
-  
   
   # List of all 100 peak positions
   peak_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // a-chart-bg-color a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-background-color-grey-lightest lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-hidden@mobile-max']/span")
