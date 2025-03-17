@@ -161,6 +161,6 @@ billboard_clean <- billboard_data  %>%
   mutate(across(c(song, artist, last_week, weeks_on_chart, weeks_at_1),
                 ~ str_squish(.x)))
 
-write.csv(billboard_clean, "data/billboard_data.csv")
+write.csv(billboard_clean, "data/billboard_database.csv")
 ```
 
