@@ -1,4 +1,3 @@
-
 library(rvest)
 library(xml2)
 library(httr)
@@ -6,79 +5,49 @@ library(tidyverse)
 library(janitor)
 library(glue)
 
-add_date <- function(movies, year) {
+Sys.setlocale("LC_TIME", "English_United States.UTF-8")
+
+
+# Should we add here who we are for ethical web scraping
+
+# Specify years for the scraper
+years <- seq(2020, 2019, by = -1)
+
+# Build the urls from the years
+urls <- glue("https://www.boxofficemojo.com/daily/{years}/?view=year")
+
+# Get best selling movie by date
+movies <- function(url, year) {
+  page <- read_html(url)
   
-  start <- as.numeric(as_date(glue("{year}-12-31")))
+  # Extract the table and select relevant columns
+  movies <- page |> 
+    html_table() %>%
+    .[[1]] |> 
+    select(`#1 Release`, Gross, Date) 
   
-  movies <- movies %>% 
-    mutate(date = seq(start, by = -1, length.out = n())) |> 
-    mutate(date = as_date(date))
+  # Clean the columns
+  movies <- movies  |> 
+    mutate(day = gsub("\\D", "", substr(Date, 1, 6)),
+           month = substr(Date, 1, 3),
+           year = year) |>  
+    mutate(date = paste(day, month, year, sep = " "),
+           date = as.Date(date, format = "%d %b %Y")) |> 
+    select(-c(Date, day, month, year)) |> 
+    mutate(Gross = as.numeric(gsub("\\D", "", Gross))) |> 
+    rename(
+      daily_earnings = Gross,
+      best_selling = "#1 Release"
+    )
   
   return(movies)
 }
 
-extract_movie_info <- function(url) {
-  
-  ind_movie <- read_html(url)
-  
-  title <- ind_movie |> 
-    xml_find_all("//h1[@class = 'a-size-extra-large']") |> 
-    xml_text() 
-  
-  image <- ind_movie |> 
-    xml_find_all("//div[@class = 'a-fixed-left-grid']//img") |> 
-    xml_attr(attr = "data-a-hires") %>%
-    .[[1]]
-  
-  opening_g <- ind_movie |> 
-    xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[@class = 'money']") |> 
-    xml_text(trim = TRUE) %>%
-    .[[1]] |> 
-    str_remove_all("[^\\d]") |> 
-    as.numeric()
-  
-  info <- ind_movie |> 
-    xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]") |> 
-    xml_text(trim = TRUE)
-  
-  if (length(info) == 0) {
-    return(tibble(title = title, image = image, opening = opening))
-  }
-  
-  cols <- info[seq(1, length(info), by = 2)]
-  values <- info[seq(2, length(info), by = 2)]
-  
-  info <- tibble(!!!setNames(as.list(values), cols)) |> 
-    janitor::clean_names()
-  
-  automatic_columns <- c("title", "image", "opening", names(info))
-  
-  info <- info %>%
-    mutate(genres = if ("genres" %in% names(.)) genres else NA) %>%
-    mutate(across(everything(), ~ ifelse(is.null(.), NA, .))) |> # We include this because it can be columns that do not appear in the web
-    mutate(image = image, .before = everything()) |> 
-    mutate(title = title, .before = everything()) |> 
-    mutate(opening = opening_g)
-  
-  info <- info |> 
-    mutate(genres = if ("genres" %in% names(info)) str_split(genres, "\\s*\\n\\s*") else list(NA)) |> 
-    mutate(genres = str_trim(genres)) 
-  
-  return(info)
-}
+movies_per_day <- map2_dfr(urls, years, movies)
 
 
-movies <- function(url) {
- page <- read_html(url)
- 
- movies <- page |> 
-   html_table() %>%
-   .[[1]] |> 
-   select(`#1 Release`, Gross) 
- 
- return(movies)
-}
 
+# Get the links of all top selling movies to access their info
 links <- function(url) {
   page <- read_html(url)
   
@@ -92,16 +61,93 @@ links <- function(url) {
   return(links)
 }
 
-years <- seq(2002,1998, by = -1)
-
-urls <- glue("https://www.boxofficemojo.com/daily/{years}/?view=year")
-
-movies_per_day <- map_dfr(urls, movies)
 links_for_info <- map(urls, links)
+links <- links_for_info |> unlist()
 
-movies <- add_date(prueba, 2002)
 
-links <- prueba2 |> unlist()
 
-info_peliculas <- map_dfr(links, extract_movie_info)
+# Extract additional info about each top selling movie
+extract_movie_info <- function(url) {
+  Sys.sleep(2)
+  
+  ind_movie <- read_html(url)
+  
+  # Scraping the title
+  title <- ind_movie |> 
+    xml_find_all("//h1[@class = 'a-size-extra-large']") |> 
+    xml_text() 
+  
+  # Scraping the movie's description
+  description <- ind_movie |> 
+    xml_find_all("//p[@class='a-size-medium']") |> 
+    xml_text()
+  
+  # Scraping the url of the image
+  image <- ind_movie |> 
+    xml_find_all("//div[@class = 'a-fixed-left-grid']//img") |> 
+    xml_attr(attr = "data-a-hires") %>%
+    .[[1]]
+  
+  # Scraping the earning box on the left (Grosses)
+  money_elements <- ind_movie |> xml_find_all("//span[@class='money']")
+  worldwide_earnings <- ifelse(length(money_elements) >= 3, 
+                               xml_text(money_elements[[3]]), NA)
+  opening_day_earnings <- ifelse(length(money_elements) >= 4, 
+                                 xml_text(money_elements[[4]]), NA)
+  
+  # Extracting all info from the rest of the box as a vector
+  # Middle column are odd numbers and right column is even numbers
+  info <- ind_movie |>
+    xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]") |>
+    xml_text(trim = TRUE)
 
+  if (length(info) == 0) {
+    
+    return(tibble(title, description, image, 
+                  worldwide_earnings, opening_day_earnings))
+    
+  }
+
+  cols <- info[seq(1, length(info), by = 2)]
+  values <- info[seq(2, length(info), by = 2)]
+  
+  info_tibble <- as_tibble(as.data.frame(t(values)))
+  colnames(info_tibble) <- cols
+
+  info_tibble <- info_tibble |> 
+    mutate(opening_day_earnings = opening_day_earnings, .before = everything()) |> 
+    mutate(worldwide_earnings = worldwide_earnings, .before = everything()) |> 
+    mutate(image = image, .before = everything()) |>
+    mutate(description = description, .before = everything()) |> 
+    mutate(title = title, .before = everything())
+  
+  return(info_tibble)
+}
+
+best_selling_info <- map(links, extract_movie_info)
+best_selling_info <- bind_rows(best_selling_info)
+
+best_selling_info <- best_selling_info |> 
+  mutate(worldwide_earnings = as.numeric(gsub("\\D", "", worldwide_earnings))) |> 
+  mutate(opening_day_earnings = as.numeric(gsub("\\D", "", opening_day_earnings))) |> 
+  mutate(Distributor = )
+
+best_selling_info <- info_peliculas |> 
+  mutate(
+    worldwide_earnings = as.numeric(str_replace_all(worldwide_earnings, "\\D", "")),
+    opening_day_earnings = as.numeric(str_replace_all(opening_day_earnings, "\\D", "")),
+    Distributor = str_replace_all(Distributor, "See full.*", " "),
+    Genres = str_replace_all(Genres, "\\n|\\s{2,}", "-")) |>
+  mutate(Genres = str_replace_all(Genres, "--", " - ")) |> 
+  select(-c("Release Date\n        \n            (Wide)", "IMDbPro", "Opening")) |> 
+  rename(
+    distributor = Distributor,
+    release_date = `Release Date`,
+    mpaa_rating = MPAA,
+    running_time = `Running Time`,
+    genres = Genres,
+    in_release = `In Release`,
+    widest_release = `Widest Release`,
+    budget = Budget
+  )
+  
