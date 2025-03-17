@@ -11,13 +11,15 @@ Sys.setlocale("LC_TIME", "English_United States.UTF-8")
 # Should we add here who we are for ethical web scraping
 
 # Specify years for the scraper
-years <- seq(2020, 2019, by = -1)
+years <- seq(2023, 2000, by = -1)
 
 # Build the urls from the years
 urls <- glue("https://www.boxofficemojo.com/daily/{years}/?view=year")
 
 # Get best selling movie by date
 movies <- function(url, year) {
+  Sys.sleep(2)
+  
   page <- read_html(url)
   
   # Extract the table and select relevant columns
@@ -49,6 +51,8 @@ movies_per_day <- map2_dfr(urls, years, movies)
 
 # Get the links of all top selling movies to access their info
 links <- function(url) {
+  Sys.sleep(2)
+  
   page <- read_html(url)
   
   links <- page |> 
@@ -79,8 +83,8 @@ extract_movie_info <- function(url) {
   
   # Scraping the movie's description
   description <- ind_movie |> 
-    xml_find_all("//p[@class='a-size-medium']") |> 
-    xml_text()
+    xml_find_all("//p[@class='a-size-medium']")
+  description <- ifelse(length(description) >1, NA, xml_text(description))
   
   # Scraping the url of the image
   image <- ind_movie |> 
@@ -127,17 +131,14 @@ extract_movie_info <- function(url) {
 best_selling_info <- map(links, extract_movie_info)
 best_selling_info <- bind_rows(best_selling_info)
 
-best_selling_info <- best_selling_info |> 
-  mutate(worldwide_earnings = as.numeric(gsub("\\D", "", worldwide_earnings))) |> 
-  mutate(opening_day_earnings = as.numeric(gsub("\\D", "", opening_day_earnings))) |> 
-  mutate(Distributor = )
-
-best_selling_info <- info_peliculas |> 
+best_selling_info_cleaned <- best_selling_info |> 
   mutate(
     worldwide_earnings = as.numeric(str_replace_all(worldwide_earnings, "\\D", "")),
     opening_day_earnings = as.numeric(str_replace_all(opening_day_earnings, "\\D", "")),
-    Distributor = str_replace_all(Distributor, "See full.*", " "),
-    Genres = str_replace_all(Genres, "\\n|\\s{2,}", "-")) |>
+    Budget = as.numeric(str_replace_all(Budget, "\\D", "")),
+    Distributor = str_replace_all(Distributor, "See full.*", ""),
+    Genres = str_replace_all(Genres, "\\n|\\s{2,}", "-"),
+    `Release Date` = str_replace_all(`Release Date`, "\\n|\\s{2,}", " ")) |>
   mutate(Genres = str_replace_all(Genres, "--", " - ")) |> 
   select(-c("Release Date\n        \n            (Wide)", "IMDbPro", "Opening")) |> 
   rename(
@@ -151,3 +152,7 @@ best_selling_info <- info_peliculas |>
     budget = Budget
   )
   
+final_best_selling_movies <- movies_per_day |> 
+  left_join(best_selling_info_cleaned, by = join_by("best_selling"=="title"))
+
+write.csv(final_best_selling_movies, "data/box_office_database.csv")
