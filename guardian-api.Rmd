@@ -5,29 +5,32 @@ date: "2025-03-16"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-usethis::edit_r_environ()
-# file.edit("~/.Renviron")
-# Sys.getenv("API_KEY_NYT")
-```
-
 ```{r}
+# usethis::edit_r_environ()
+# file.edit("~/.Renviron")
+# Sys.getenv("API_KEY_GUARDIAN")
+
 library(httr2)
 library(tidyverse)
+```
+
+Only trying out
+
+```{r}
 main_link <- "https://content.guardianapis.com/search"
 
 # Trying out a query to understand structure
 data <- main_link |> 
   request() |>
   req_url_query(`api-key` = Sys.getenv("API_KEY_GUARDIAN"), format = "json",
-                `from-date` = "2000-01-01", `to-date` = "2000-01-05", 
-                `order-by` = "relevance", `use-date` = "newspaper-edition",
-                section = "world", `show-fields` = "headline,trailText,standfirst",
+                `from-date` = "2000-04-30", `to-date` = "2000-05-04", 
+                `order-by` = "relevance", `section` = "world", 
+                `show-fields` = "headline,trailText,standfirst",
                 `page-size` = 50) |> 
   req_perform() |> 
   resp_body_json(simplifyVector = TRUE)
 
-data$response$results$
+data$response$results$webTitle
 
 news <- tibble(
   date = data$response$results$webPublicationDate,
@@ -45,17 +48,18 @@ news <- news |>
   slice_min(rank) |> 
   ungroup() |> 
   select(-rank)
-  
 ```
 
-```{r}
-dates <- seq(as.Date("2000-01-01"), as.Date("2000-01-05"), by = "3 days")
 
+Function to scrape
+
+```{r}
+# Create a function to get a list of start and end date for every query
 dates_creator <- function(start, end) {
   # To be provided as "yyyy-mm-dd"
   
-  start_dates <- seq(as.Date(start), as.Date(end), by="4 days")
-  end_dates <- start_dates + 3
+  start_dates <- seq(as.Date(start), as.Date(end), by="5 days")
+  end_dates <- start_dates + 4
   
   start_dates <- start_dates |> 
     as.character() 
@@ -68,8 +72,8 @@ dates_creator <- function(start, end) {
   return(list_dates)
 }
 
-
-dates <- dates_creator("2004-04-01", "2004-05-01")
+# Apply function
+dates <- dates_creator("2000-01-01", "2000-03-31")
 
 start_dates <- dates[[1]]
 start_dates
@@ -86,14 +90,14 @@ guardian_news <- function(start_date, end_date){
   main_link <- "https://content.guardianapis.com/search"
   
   data <- main_link |> 
-  request() |>
-  req_url_query(`api-key` = Sys.getenv("API_KEY_GUARDIAN"), format = "json",
+    request() |>
+    req_url_query(`api-key` = Sys.getenv("API_KEY_GUARDIAN"), format = "json",
                 `from-date` = start_date, `to-date` = end_date, 
-                `order-by` = "relevance", `use-date` = "newspaper-edition",
-                section = "world", `show-fields` = "headline,trailText,standfirst",
-                `page-size` = 50) |> 
-  req_perform() |> 
-  resp_body_json(simplifyVector = TRUE)
+                `order-by` = "relevance", `section` = "world", 
+                `show-fields` = "headline,trailText,standfirst",
+                `page-size` = 50) |>
+    req_perform() |> 
+    resp_body_json(simplifyVector = TRUE)
   
   news <- tibble(
     date = data$response$results$webPublicationDate,
@@ -104,17 +108,24 @@ guardian_news <- function(start_date, end_date){
   )
   
   news <- news |> 
-  mutate(date = str_remove_all(date,"T.+$"))|> 
-  mutate(date = str_trim(date)) |>     
-  mutate(date = as_date(date)) |>  
-  mutate(rank = row_number())  |> 
-  group_by(date) |> 
-  slice_min(rank, with_ties = FALSE) |> 
-  ungroup() 
+    mutate(date = str_remove_all(date,"T.+$"))|> 
+    mutate(date = str_trim(date)) |>     
+    mutate(date = as_date(date)) |>  
+    mutate(rank = row_number())  |> 
+    group_by(date) |> 
+    slice_min(rank, with_ties = FALSE) |> 
+    ungroup() 
   
   return(news)
 }
 
-news5 <- map2_dfr(start_dates, end_dates, guardian_news)
+news <- map2_dfr(start_dates, end_dates, guardian_news)
+
+if (!file.exists("data/guardian_database.csv")) {
+    write_csv(news, "data/guardian_database.csv")
+  } else {
+    # If the file does exist, the *append* the result to the already existing CSV file
+    write_csv(bicing_results, "data/guardian_database.csv", append = TRUE)
+  }
 ```
 
