@@ -4,8 +4,8 @@ output: html_document
 date: "2025-03-03"
 ---
 
-```{r setup, include=FALSE}
-usethis::edit_r_environ()
+```{r}
+#usethis::edit_r_environ()
 # file.edit("~/.Renviron")
 # Sys.getenv("API_KEY_NYT")
 ```
@@ -117,7 +117,7 @@ dates_creator <- function(start, end) {
   return(list_dates)
 }
 
-dates <- dates_creator("2000-01-01", "2002-09-15")
+dates <- dates_creator("2002-09-17", "2005-05-31")
 
 start_dates <- dates[[1]]
 start_dates
@@ -166,11 +166,16 @@ if (!file.exists("data/nyt_database.csv")) {
     write_csv(news, "data/nyt_database.csv")
   } else {
     # If the file does exist, the *append* the result to the already existing CSV file
-    write_csv(bicing_results, "data/nyt_database.csv", append = TRUE)
+    write_csv(news, "data/nyt_database.csv", append = TRUE)
   }
 
 ```
 
 
+# Read the data 
+
+```{r}
+data <- read_csv("data/nyt_database.csv")
+```
 
 
