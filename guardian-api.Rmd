@@ -127,5 +127,6 @@ if (!file.exists("data/guardian_database.csv")) {
     # If the file does exist, the *append* the result to the already existing CSV file
     write_csv(news, "data/guardian_database.csv", append = TRUE)
   }
+
 ```
 
