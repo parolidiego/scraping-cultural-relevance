@@ -16,11 +16,28 @@ library(tidyverse)
 main_link <- "https://api.nytimes.com/svc/search/v2/articlesearch.json"
 
 # Trying out a query to understand structure
-news <- main_link |> 
+data <- main_link |> 
   request() |>
-  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), begin_date = 20200101, end_date = 20200131) |> 
+  req_url_query(`api-key` = Sys.getenv("API_KEY_NYT"), begin_date = 20070114, end_date = 20070115) |> 
   req_perform() |> 
   resp_body_json(simplifyVector = TRUE)
+
+news <- tibble(date = data$response$docs$pub_date,
+                 headline = data$response$docs$headline$main,
+                 print_headline = data$response$docs$headline$print_headline,
+                 abstract = data$response$docs$abstract,
+                 snippet = data$response$docs$snippet,
+                 lead_paragraph = data$response$docs$lead_paragraph)
+  
+news <- news |> 
+  mutate(date = str_remove_all(date,"T.+$")) |> 
+  mutate(date = str_trim(date)) |>     
+  mutate(date = as_date(date)) |>  
+  mutate(rank = row_number())  |> 
+  group_by(date) |> 
+  slice_min(rank) |> 
+  ungroup() |> 
+  select(-rank)
 ```
 
 I am getting back only 10 articles it seems
@@ -117,7 +134,7 @@ dates_creator <- function(start, end) {
   return(list_dates)
 }
 
-dates <- dates_creator("2002-09-17", "2005-05-31")
+dates <- dates_creator("2005-06-01", "2006-07-31")
 
 start_dates <- dates[[1]]
 start_dates
