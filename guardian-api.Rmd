@@ -73,7 +73,7 @@ dates_creator <- function(start, end) {
 }
 
 # Apply function
-dates <- dates_creator("2000-01-01", "2000-03-31")
+dates <- dates_creator("2000-04-05", "2007-01-05")
 
 start_dates <- dates[[1]]
 start_dates
@@ -125,7 +125,7 @@ if (!file.exists("data/guardian_database.csv")) {
     write_csv(news, "data/guardian_database.csv")
   } else {
     # If the file does exist, the *append* the result to the already existing CSV file
-    write_csv(bicing_results, "data/guardian_database.csv", append = TRUE)
+    write_csv(news, "data/guardian_database.csv", append = TRUE)
   }
 ```
 
