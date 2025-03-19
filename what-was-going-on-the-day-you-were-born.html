@@ -261,8 +261,10 @@ into effect.</p></li>
 </div>
 <div id="adjusting-other-settings" class="section level2">
 <h2>Adjusting other settings</h2>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Setting english as the system language</span></span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Setting English as the system language</span></span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">Sys.setlocale</span>(<span class="st">&quot;LC_TIME&quot;</span>, <span class="st">&quot;English_United States.UTF-8&quot;</span>))</span></code></pre></div>
+<p>You will need this to correctly extract the dates of each movie in
+the Box Office scraper.</p>
 </div>
 <div id="setting-your-user-agent" class="section level2">
 <h2>Setting your user agent</h2>
@@ -270,7 +272,7 @@ into effect.</p></li>
 on Google. Once you get this information paste it before the semicolon
 below. Also write within the string your name, last name and email.</p>
 <p>Although this passage is not required, it allows websites to contact
-you if you are causing problems to them with your requests and therfore
+you if you are causing problems to them with your requests and therefore
 it is best practice to do it.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>my_user_agent <span class="ot">&lt;-</span> <span class="st">&quot;user agent; Name Last-Name / email&quot;</span></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">set_config</span>(<span class="fu">user_agent</span>(my_user_agent))</span>
@@ -301,7 +303,7 @@ Saturday.</p>
 do not guarantee reproducibility for years before the 2000s as the
 publication date of the chart and/or the website structure may change
 for years earlier than 2000.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>start_date <span class="ot">&lt;-</span> <span class="st">&quot;2000-01-01&quot;</span> <span class="co"># Make sure this is a saturday</span></span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>start_date <span class="ot">&lt;-</span> <span class="st">&quot;2000-01-01&quot;</span> <span class="co"># Make sure this is a Saturday</span></span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>end_date <span class="ot">&lt;-</span> <span class="st">&quot;2000-03-31&quot;</span> <span class="co"># This date can be any date</span></span></code></pre></div>
 </div>
 <div id="the-scraper" class="section level2">
@@ -522,60 +524,64 @@ top daily seller.</p>
 <span id="cb19-29"><a href="#cb19-29" tabindex="-1"></a>  </span>
 <span id="cb19-30"><a href="#cb19-30" tabindex="-1"></a>  <span class="co"># Extracting all info from the rest of the box as a vector</span></span>
 <span id="cb19-31"><a href="#cb19-31" tabindex="-1"></a>  <span class="co"># Middle column are odd numbers and right column is even numbers</span></span>
-<span id="cb19-32"><a href="#cb19-32" tabindex="-1"></a>  info <span class="ot">&lt;-</span> ind_movie <span class="sc">|&gt;</span></span>
-<span id="cb19-33"><a href="#cb19-33" tabindex="-1"></a>    <span class="fu">xml_find_all</span>(<span class="st">&quot;//div[@class = &#39;a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile&#39;]//span[not(@*)]&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb19-34"><a href="#cb19-34" tabindex="-1"></a>    <span class="fu">xml_text</span>(<span class="at">trim =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb19-35"><a href="#cb19-35" tabindex="-1"></a>  </span>
-<span id="cb19-36"><a href="#cb19-36" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(info) <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb19-37"><a href="#cb19-37" tabindex="-1"></a>    </span>
-<span id="cb19-38"><a href="#cb19-38" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">tibble</span>(title, description, image, </span>
-<span id="cb19-39"><a href="#cb19-39" tabindex="-1"></a>                  worldwide_earnings, opening_day_earnings))</span>
-<span id="cb19-40"><a href="#cb19-40" tabindex="-1"></a>    </span>
-<span id="cb19-41"><a href="#cb19-41" tabindex="-1"></a>  }</span>
-<span id="cb19-42"><a href="#cb19-42" tabindex="-1"></a>  </span>
-<span id="cb19-43"><a href="#cb19-43" tabindex="-1"></a>  <span class="co"># Grabbing all possible information (not always every page has all the info)</span></span>
-<span id="cb19-44"><a href="#cb19-44" tabindex="-1"></a>  cols <span class="ot">&lt;-</span> info[<span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">length</span>(info), <span class="at">by =</span> <span class="dv">2</span>)]</span>
-<span id="cb19-45"><a href="#cb19-45" tabindex="-1"></a>  values <span class="ot">&lt;-</span> info[<span class="fu">seq</span>(<span class="dv">2</span>, <span class="fu">length</span>(info), <span class="at">by =</span> <span class="dv">2</span>)]</span>
+<span id="cb19-32"><a href="#cb19-32" tabindex="-1"></a>  </span>
+<span id="cb19-33"><a href="#cb19-33" tabindex="-1"></a>  info <span class="ot">&lt;-</span> ind_movie <span class="sc">|&gt;</span> </span>
+<span id="cb19-34"><a href="#cb19-34" tabindex="-1"></a>    <span class="co"># Specifying spans with not attributes was needed to get the information </span></span>
+<span id="cb19-35"><a href="#cb19-35" tabindex="-1"></a>    <span class="fu">xml_find_all</span>(<span class="st">&quot;//div[@class = &#39;a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile&#39;]//span[not(@*)]&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb19-36"><a href="#cb19-36" tabindex="-1"></a>    <span class="fu">xml_text</span>(<span class="at">trim =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb19-37"><a href="#cb19-37" tabindex="-1"></a>  </span>
+<span id="cb19-38"><a href="#cb19-38" tabindex="-1"></a>  <span class="co"># This is used in case information is not available in the box</span></span>
+<span id="cb19-39"><a href="#cb19-39" tabindex="-1"></a>  </span>
+<span id="cb19-40"><a href="#cb19-40" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(info) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb19-41"><a href="#cb19-41" tabindex="-1"></a>    </span>
+<span id="cb19-42"><a href="#cb19-42" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">tibble</span>(title, description, image, </span>
+<span id="cb19-43"><a href="#cb19-43" tabindex="-1"></a>                  worldwide_earnings, opening_day_earnings))</span>
+<span id="cb19-44"><a href="#cb19-44" tabindex="-1"></a>    </span>
+<span id="cb19-45"><a href="#cb19-45" tabindex="-1"></a>  }</span>
 <span id="cb19-46"><a href="#cb19-46" tabindex="-1"></a>  </span>
-<span id="cb19-47"><a href="#cb19-47" tabindex="-1"></a>  info_tibble <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(<span class="fu">as.data.frame</span>(<span class="fu">t</span>(values)))</span>
-<span id="cb19-48"><a href="#cb19-48" tabindex="-1"></a>  <span class="fu">colnames</span>(info_tibble) <span class="ot">&lt;-</span> cols</span>
-<span id="cb19-49"><a href="#cb19-49" tabindex="-1"></a>  </span>
-<span id="cb19-50"><a href="#cb19-50" tabindex="-1"></a>  <span class="co"># Adding the data scraped in the first part</span></span>
-<span id="cb19-51"><a href="#cb19-51" tabindex="-1"></a>  info_tibble <span class="ot">&lt;-</span> info_tibble <span class="sc">|&gt;</span> </span>
-<span id="cb19-52"><a href="#cb19-52" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">opening_day_earnings =</span> opening_day_earnings, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span> </span>
-<span id="cb19-53"><a href="#cb19-53" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">worldwide_earnings =</span> worldwide_earnings, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span> </span>
-<span id="cb19-54"><a href="#cb19-54" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">image =</span> image, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span></span>
-<span id="cb19-55"><a href="#cb19-55" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">description =</span> description, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span> </span>
-<span id="cb19-56"><a href="#cb19-56" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">title =</span> title, <span class="at">.before =</span> <span class="fu">everything</span>())</span>
-<span id="cb19-57"><a href="#cb19-57" tabindex="-1"></a>  </span>
-<span id="cb19-58"><a href="#cb19-58" tabindex="-1"></a>  <span class="fu">return</span>(info_tibble)</span>
-<span id="cb19-59"><a href="#cb19-59" tabindex="-1"></a>}</span>
-<span id="cb19-60"><a href="#cb19-60" tabindex="-1"></a></span>
-<span id="cb19-61"><a href="#cb19-61" tabindex="-1"></a>best_selling_info <span class="ot">&lt;-</span> <span class="fu">map</span>(links, extract_movie_info)</span>
-<span id="cb19-62"><a href="#cb19-62" tabindex="-1"></a>best_selling_info <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(best_selling_info)</span>
-<span id="cb19-63"><a href="#cb19-63" tabindex="-1"></a></span>
-<span id="cb19-64"><a href="#cb19-64" tabindex="-1"></a><span class="co"># Cleaning the data</span></span>
-<span id="cb19-65"><a href="#cb19-65" tabindex="-1"></a>best_selling_info_cleaned <span class="ot">&lt;-</span> best_selling_info <span class="sc">|&gt;</span> </span>
-<span id="cb19-66"><a href="#cb19-66" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb19-67"><a href="#cb19-67" tabindex="-1"></a>    <span class="at">worldwide_earnings =</span> <span class="fu">as.numeric</span>(<span class="fu">str_replace_all</span>(worldwide_earnings, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">D&quot;</span>, <span class="st">&quot;&quot;</span>)),</span>
-<span id="cb19-68"><a href="#cb19-68" tabindex="-1"></a>    <span class="at">opening_day_earnings =</span> <span class="fu">as.numeric</span>(<span class="fu">str_replace_all</span>(opening_day_earnings, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">D&quot;</span>, <span class="st">&quot;&quot;</span>)),</span>
-<span id="cb19-69"><a href="#cb19-69" tabindex="-1"></a>    <span class="at">Budget =</span> <span class="fu">as.numeric</span>(<span class="fu">str_replace_all</span>(Budget, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">D&quot;</span>, <span class="st">&quot;&quot;</span>)),</span>
-<span id="cb19-70"><a href="#cb19-70" tabindex="-1"></a>    <span class="at">Distributor =</span> <span class="fu">str_replace_all</span>(Distributor, <span class="st">&quot;See full.*&quot;</span>, <span class="st">&quot;&quot;</span>),</span>
-<span id="cb19-71"><a href="#cb19-71" tabindex="-1"></a>    <span class="at">Genres =</span> <span class="fu">str_replace_all</span>(Genres, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">n|</span><span class="sc">\\</span><span class="st">s{2,}&quot;</span>, <span class="st">&quot;-&quot;</span>),</span>
-<span id="cb19-72"><a href="#cb19-72" tabindex="-1"></a>    <span class="st">`</span><span class="at">Release Date</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">str_replace_all</span>(<span class="st">`</span><span class="at">Release Date</span><span class="st">`</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">n|</span><span class="sc">\\</span><span class="st">s{2,}&quot;</span>, <span class="st">&quot; &quot;</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb19-73"><a href="#cb19-73" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Genres =</span> <span class="fu">str_replace_all</span>(Genres, <span class="st">&quot;--&quot;</span>, <span class="st">&quot; - &quot;</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb19-74"><a href="#cb19-74" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">&quot;Release Date</span><span class="sc">\n</span><span class="st">        </span><span class="sc">\n</span><span class="st">            (Wide)&quot;</span>, <span class="st">&quot;IMDbPro&quot;</span>, <span class="st">&quot;Opening&quot;</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb19-75"><a href="#cb19-75" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
-<span id="cb19-76"><a href="#cb19-76" tabindex="-1"></a>    <span class="at">distributor =</span> Distributor,</span>
-<span id="cb19-77"><a href="#cb19-77" tabindex="-1"></a>    <span class="at">release_date =</span> <span class="st">`</span><span class="at">Release Date</span><span class="st">`</span>,</span>
-<span id="cb19-78"><a href="#cb19-78" tabindex="-1"></a>    <span class="at">mpaa_rating =</span> MPAA,</span>
-<span id="cb19-79"><a href="#cb19-79" tabindex="-1"></a>    <span class="at">running_time =</span> <span class="st">`</span><span class="at">Running Time</span><span class="st">`</span>,</span>
-<span id="cb19-80"><a href="#cb19-80" tabindex="-1"></a>    <span class="at">genres =</span> Genres,</span>
-<span id="cb19-81"><a href="#cb19-81" tabindex="-1"></a>    <span class="at">in_release =</span> <span class="st">`</span><span class="at">In Release</span><span class="st">`</span>,</span>
-<span id="cb19-82"><a href="#cb19-82" tabindex="-1"></a>    <span class="at">widest_release =</span> <span class="st">`</span><span class="at">Widest Release</span><span class="st">`</span>,</span>
-<span id="cb19-83"><a href="#cb19-83" tabindex="-1"></a>    <span class="at">budget =</span> Budget</span>
-<span id="cb19-84"><a href="#cb19-84" tabindex="-1"></a>  )</span>
-<span id="cb19-85"><a href="#cb19-85" tabindex="-1"></a><span class="fu">head</span>(best_selling_info_cleaned)</span></code></pre></div>
+<span id="cb19-47"><a href="#cb19-47" tabindex="-1"></a>  <span class="co"># Grabbing all possible information (not always every page has all the info)</span></span>
+<span id="cb19-48"><a href="#cb19-48" tabindex="-1"></a>  cols <span class="ot">&lt;-</span> info[<span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">length</span>(info), <span class="at">by =</span> <span class="dv">2</span>)]</span>
+<span id="cb19-49"><a href="#cb19-49" tabindex="-1"></a>  values <span class="ot">&lt;-</span> info[<span class="fu">seq</span>(<span class="dv">2</span>, <span class="fu">length</span>(info), <span class="at">by =</span> <span class="dv">2</span>)]</span>
+<span id="cb19-50"><a href="#cb19-50" tabindex="-1"></a>  </span>
+<span id="cb19-51"><a href="#cb19-51" tabindex="-1"></a>  info_tibble <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(<span class="fu">as.data.frame</span>(<span class="fu">t</span>(values)))</span>
+<span id="cb19-52"><a href="#cb19-52" tabindex="-1"></a>  <span class="fu">colnames</span>(info_tibble) <span class="ot">&lt;-</span> cols</span>
+<span id="cb19-53"><a href="#cb19-53" tabindex="-1"></a>  </span>
+<span id="cb19-54"><a href="#cb19-54" tabindex="-1"></a>  <span class="co"># Adding the data scraped in the first part</span></span>
+<span id="cb19-55"><a href="#cb19-55" tabindex="-1"></a>  info_tibble <span class="ot">&lt;-</span> info_tibble <span class="sc">|&gt;</span> </span>
+<span id="cb19-56"><a href="#cb19-56" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">opening_day_earnings =</span> opening_day_earnings, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb19-57"><a href="#cb19-57" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">worldwide_earnings =</span> worldwide_earnings, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb19-58"><a href="#cb19-58" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">image =</span> image, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb19-59"><a href="#cb19-59" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">description =</span> description, <span class="at">.before =</span> <span class="fu">everything</span>()) <span class="sc">|&gt;</span> </span>
+<span id="cb19-60"><a href="#cb19-60" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">title =</span> title, <span class="at">.before =</span> <span class="fu">everything</span>())</span>
+<span id="cb19-61"><a href="#cb19-61" tabindex="-1"></a>  </span>
+<span id="cb19-62"><a href="#cb19-62" tabindex="-1"></a>  <span class="fu">return</span>(info_tibble)</span>
+<span id="cb19-63"><a href="#cb19-63" tabindex="-1"></a>}</span>
+<span id="cb19-64"><a href="#cb19-64" tabindex="-1"></a></span>
+<span id="cb19-65"><a href="#cb19-65" tabindex="-1"></a>best_selling_info <span class="ot">&lt;-</span> <span class="fu">map</span>(links, extract_movie_info)</span>
+<span id="cb19-66"><a href="#cb19-66" tabindex="-1"></a>best_selling_info <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(best_selling_info)</span>
+<span id="cb19-67"><a href="#cb19-67" tabindex="-1"></a></span>
+<span id="cb19-68"><a href="#cb19-68" tabindex="-1"></a><span class="co"># Cleaning the data</span></span>
+<span id="cb19-69"><a href="#cb19-69" tabindex="-1"></a>best_selling_info_cleaned <span class="ot">&lt;-</span> best_selling_info <span class="sc">|&gt;</span> </span>
+<span id="cb19-70"><a href="#cb19-70" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb19-71"><a href="#cb19-71" tabindex="-1"></a>    <span class="at">worldwide_earnings =</span> <span class="fu">as.numeric</span>(<span class="fu">str_replace_all</span>(worldwide_earnings, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">D&quot;</span>, <span class="st">&quot;&quot;</span>)),</span>
+<span id="cb19-72"><a href="#cb19-72" tabindex="-1"></a>    <span class="at">opening_day_earnings =</span> <span class="fu">as.numeric</span>(<span class="fu">str_replace_all</span>(opening_day_earnings, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">D&quot;</span>, <span class="st">&quot;&quot;</span>)),</span>
+<span id="cb19-73"><a href="#cb19-73" tabindex="-1"></a>    <span class="at">Budget =</span> <span class="fu">as.numeric</span>(<span class="fu">str_replace_all</span>(Budget, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">D&quot;</span>, <span class="st">&quot;&quot;</span>)),</span>
+<span id="cb19-74"><a href="#cb19-74" tabindex="-1"></a>    <span class="at">Distributor =</span> <span class="fu">str_replace_all</span>(Distributor, <span class="st">&quot;See full.*&quot;</span>, <span class="st">&quot;&quot;</span>),</span>
+<span id="cb19-75"><a href="#cb19-75" tabindex="-1"></a>    <span class="at">Genres =</span> <span class="fu">str_replace_all</span>(Genres, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">n|</span><span class="sc">\\</span><span class="st">s{2,}&quot;</span>, <span class="st">&quot;-&quot;</span>),</span>
+<span id="cb19-76"><a href="#cb19-76" tabindex="-1"></a>    <span class="st">`</span><span class="at">Release Date</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">str_replace_all</span>(<span class="st">`</span><span class="at">Release Date</span><span class="st">`</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">n|</span><span class="sc">\\</span><span class="st">s{2,}&quot;</span>, <span class="st">&quot; &quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb19-77"><a href="#cb19-77" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Genres =</span> <span class="fu">str_replace_all</span>(Genres, <span class="st">&quot;--&quot;</span>, <span class="st">&quot; - &quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb19-78"><a href="#cb19-78" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">&quot;Release Date</span><span class="sc">\n</span><span class="st">        </span><span class="sc">\n</span><span class="st">            (Wide)&quot;</span>, <span class="st">&quot;IMDbPro&quot;</span>, <span class="st">&quot;Opening&quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb19-79"><a href="#cb19-79" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb19-80"><a href="#cb19-80" tabindex="-1"></a>    <span class="at">distributor =</span> Distributor,</span>
+<span id="cb19-81"><a href="#cb19-81" tabindex="-1"></a>    <span class="at">release_date =</span> <span class="st">`</span><span class="at">Release Date</span><span class="st">`</span>,</span>
+<span id="cb19-82"><a href="#cb19-82" tabindex="-1"></a>    <span class="at">mpaa_rating =</span> MPAA,</span>
+<span id="cb19-83"><a href="#cb19-83" tabindex="-1"></a>    <span class="at">running_time =</span> <span class="st">`</span><span class="at">Running Time</span><span class="st">`</span>,</span>
+<span id="cb19-84"><a href="#cb19-84" tabindex="-1"></a>    <span class="at">genres =</span> Genres,</span>
+<span id="cb19-85"><a href="#cb19-85" tabindex="-1"></a>    <span class="at">in_release =</span> <span class="st">`</span><span class="at">In Release</span><span class="st">`</span>,</span>
+<span id="cb19-86"><a href="#cb19-86" tabindex="-1"></a>    <span class="at">widest_release =</span> <span class="st">`</span><span class="at">Widest Release</span><span class="st">`</span>,</span>
+<span id="cb19-87"><a href="#cb19-87" tabindex="-1"></a>    <span class="at">budget =</span> Budget</span>
+<span id="cb19-88"><a href="#cb19-88" tabindex="-1"></a>  )</span>
+<span id="cb19-89"><a href="#cb19-89" tabindex="-1"></a><span class="fu">head</span>(best_selling_info_cleaned)</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 13
 ##   title    description image worldwide_earnings opening_day_earnings distributor
 ##   &lt;chr&gt;    &lt;chr&gt;       &lt;chr&gt;              &lt;dbl&gt;                &lt;dbl&gt; &lt;chr&gt;      
