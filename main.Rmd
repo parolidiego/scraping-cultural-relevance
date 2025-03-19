@@ -1,6 +1,0 @@
----
-title: "main"
-output: html_document
----
-
-In this notebook we shall put together all our project
