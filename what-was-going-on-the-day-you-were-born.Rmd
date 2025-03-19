@@ -79,15 +79,17 @@ invisible(lapply(packages, library, character.only = TRUE))
 ## Adjusting other settings
 
 ```{r, message = FALSE}
-# Setting english as the system language
+# Setting English as the system language
 invisible(Sys.setlocale("LC_TIME", "English_United States.UTF-8"))
 ```
+
+You will need this to correctly extract the dates of each movie in the Box Office scraper.
 
 ## Setting your user agent
 
 You can easily find out your user agent by searching "my user agent" on Google. Once you get this information paste it before the semicolon below. Also write within the string your name, last name and email. 
 
-Although this passage is not required, it allows websites to contact you if you are causing problems to them with your requests and therfore it is best practice to do it.
+Although this passage is not required, it allows websites to contact you if you are causing problems to them with your requests and therefore it is best practice to do it.
 
 ```{r, eval = FALSE}
 my_user_agent <- "user agent; Name Last-Name / email"
@@ -113,7 +115,7 @@ To ensure the accuracy of the information, the start date should be a Saturday.
 The first Hot 100 chart was published on August 4, 1958. However, we do not guarantee reproducibility for years before the 2000s as the publication date of the chart and/or the website structure may change for years earlier than 2000.
 
 ```{r}
-start_date <- "2000-01-01" # Make sure this is a saturday
+start_date <- "2000-01-01" # Make sure this is a Saturday
 end_date <- "2000-03-31" # This date can be any date
 ```
 
@@ -323,9 +325,13 @@ extract_movie_info <- function(url) {
   
   # Extracting all info from the rest of the box as a vector
   # Middle column are odd numbers and right column is even numbers
-  info <- ind_movie |>
-    xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]") |>
+  
+  info <- ind_movie |> 
+    # Specifying spans with not attributes was needed to get the information 
+    xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]") |> 
     xml_text(trim = TRUE)
+  
+  # This is used in case information is not available in the box
   
   if (length(info) == 0) {
     
