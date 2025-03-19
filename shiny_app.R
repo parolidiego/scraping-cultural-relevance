@@ -12,10 +12,17 @@ movies <-  read_csv("data/box_office_database.csv")
 guardian <- read_csv("data/guardian_database.csv")
 bill <- read_csv("data/billboard_database.csv")
 
+# Since we have weekly data in the billboard we had to extend it to the days to then show it in the app
+bill <- bill %>%
+  complete(date = seq(min(date), max(date), by = "day")) %>%
+  fill(-date, .direction = "up") 
+
 data <-  movies |> 
-  full_join(bill2, by = "date") |> 
+  full_join(bill, by = "date") |> 
   full_join(ny, by = "date") |> 
   full_join(guardian, by = "date")
+
+
 
 data <- data %>% # This is for cleaning the columns that where in HTML format
   mutate(across(everything(), ~ str_replace_all(.x, "<.+?>", ""))) %>%
