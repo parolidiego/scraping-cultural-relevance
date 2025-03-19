@@ -87,7 +87,7 @@ invisible(Sys.setlocale("LC_TIME", "English_United States.UTF-8"))
 
 You can easily find out your user agent by searching "my user agent" on Google. Once you get this information paste it before the semicolon below. Also write within the string your name, last name and email. 
 
-Although this passage is not required, it allows websites to contact you if you are causing problems to them with your requests
+Although this passage is not required, it allows websites to contact you if you are causing problems to them with your requests and therfore it is best practice to do it.
 
 ```{r, eval = FALSE}
 my_user_agent <- "user agent; Name Last-Name / email"
@@ -201,7 +201,7 @@ write.csv(billboard_clean, "data/billboard_database.csv")
 
 Box Office Mojo is a website storing information about the best selling movies at the box office. 
 
-Again with the purpose of displaying information for each day we decided to scrape a table containing the best selling movie of that day in the USA for each day of a year. Also in this case we were able to loop over several years as there was an indication in the URL of which year was displayed. 
+Again with the purpose of displaying information for each day we decided to scrape a table containing the best selling movie of that day in the USA for each day of a year. In this case as well, we were able to loop over multiple years since the URL included an indicator specifying the year that was displayed by the website.
 
 However, this table contained little additional information about the movie that was no.1, therefore we decided to access the page of each of the no.1 movies to get more information. We built a function to retrieve the links of the personal page of each movie from the initial table and then, using those links, we scraped all the information that we deemed interesting from the personal page of the movies.
 
@@ -379,11 +379,10 @@ head(best_selling_info_cleaned)
 
 Joining the daily data with the specific information about each daily best selling movie.
 
-```{r}
+```{r, warning=FALSE}
 # Joining the additional information with the daily best seller
 final_best_selling_movies <- movies_per_day |> 
   left_join(best_selling_info_cleaned, by = join_by("best_selling"=="title"))
-dim(final_best_selling_movies)
 head(final_best_selling_movies)
 ```
 
@@ -449,12 +448,13 @@ end_dates
 
 ```{r}
 ny_news <- function(start_date, end_date){
-  api_key <- Sys.getenv("API_KEY_GUARDIAN")
+  api_key <- Sys.getenv("API_KEY_NYT")
   if (api_key == "") stop("API key is missing! Set 'API_KEY_NYT' in your environment.")
   
   Sys.sleep(12)
  
   main_link <- "https://api.nytimes.com/svc/search/v2/articlesearch.json"
+  
   # Building and performing the API query 
   data <- main_link |> 
   request() |>
@@ -492,7 +492,7 @@ news_nyt <- map2_dfr(start_dates, end_dates, ny_news)
 head(news_nyt)
 ```
 
-We have run this function to make repeated calls (always within the limits) to the API for several days. Getting data from ... to ...
+We have run this function to make repeated calls (always within the limits) to the API for several days. Getting data from 2000-01-01 to 2005-12-31 so far. We plan to expand this in the future.
 
 ```{r, eval=FALSE}
 if (!file.exists("data/nyt_database.csv")) {
@@ -505,11 +505,11 @@ if (!file.exists("data/nyt_database.csv")) {
 
 # The Guardian API
 
-For The Guardian we applied a similar reasoning as for The New York Times. However this time, each API calls gets back up to 50 results. Therefore we expanded our query window to 5 days instead of 2 days.
+For The Guardian we applied a similar reasoning as for The New York Times. However this time, each API calls gets  us back up to 50 results. Therefore we expanded our query window to 5 days instead of 2 days.
 
 ## Setting start and end date
 
-The function is structured as before with only minor changes to format dates as need for the API call.
+The function is structured as before with only minor changes to format dates as needed for the API call.
 
 ```{r}
 # Create a function to get a list of start and end date for every query
@@ -596,7 +596,7 @@ news_guardian <- map2_dfr(start_dates, end_dates, guardian_news)
 head(news_guardian)
 ```
 
-We have run this function to make repeated calls (always within the limits) to the API for several days. Getting data from ... to ...
+We have run this function to make repeated calls (always within the limits) to the API for several days. Getting data from 2000-01-01 to 2007-12-31. We plan to extend this datset as well in the future.
 
 ```{r, eval=FALSE}
 if (!file.exists("data/guardian_database.csv")) {
@@ -609,6 +609,13 @@ if (!file.exists("data/guardian_database.csv")) {
 
 # We got the data. What now?
 
-With the data that we got we have built a Shiny app where one can choose a date and the data for that date will be displayed.
+With the data that we obtain we have built a Shiny app where one can choose a date and the data for that date will be displayed.
 
-You can find in this directory file `shiny_app.R`
+You can see our Shiny app by executing the `shiny_app.R` script in this directory. By running the code below you will automatically open the script which then needs to be executed fully to launch the Shiny App.
+
+Enjoy!
+
+```{r, eval=FALSE}
+file.edit("shiny_app.R")
+```
+
