@@ -16,13 +16,13 @@ This repository was produced as the final assignment for the Data Harvesting cou
 
 This repository contains:
 - A fully replicable script named `what-was-going-on-the-day-you-were-born.Rmd` where we perform and explain the process to get the data that we have obtained.
-- A rendered .html version of it the same script.
+- A rendered .html version of it in the same script.
 - A folder `data` where we store the databases obtained throughout the project.
 - A `shiny_app.R` script where we organize all the data together and display it in a beautiful Shiny App.
 
 ## Requirements and step-by-step guide to reproduce our project
 
-In order to reproduce our project it is necessary to have the `RStudio` softwafare installed and obtain an API key from *The Guardian* and *The New York Times*.
+In order to reproduce our project it is necessary to have the `RStudio` software installed and obtain an API key from *The Guardian* and *The New York Times*.
 
 Below are step-by-step instructions for obtaining API keys from *The Guardian* and *The New York Times* that must be followed before executing the project.
 
