@@ -1,9 +1,27 @@
+# Cleaning the environment
+rm(list = ls())
 
-library(shiny)
-library(dplyr)
-library(ggplot2)
-library(shinythemes)
-library(shinyjs)
+# List of packages needed
+packages <- c("shiny",
+              "tidyverse",
+              "shinythemes",
+              "shinyjs",
+              "rstudioapi")
+
+# Checks if the packages are already installed, otherwise installs them
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+rstudioapi::restartSession(clean = TRUE)
+
+packages <- c("shiny",
+              "tidyverse",
+              "shinythemes",
+              "shinyjs")
+
+lapply(packages, library, character.only = TRUE)
 
 options(scipen = 999) # We remove the scientific notation
 
@@ -12,27 +30,46 @@ movies <-  read_csv("data/box_office_database.csv")
 guardian <- read_csv("data/guardian_database.csv")
 bill <- read_csv("data/billboard_database.csv")
 
+
 # Since we have weekly data in the billboard we had to extend it to the days to then show it in the app
 bill <- bill %>%
   complete(date = seq(min(date), max(date), by = "day")) %>%
   fill(-date, .direction = "up") 
 
+
+# Some of the observations scraped from movies are repeated (i.e. the same movie shown more than once very day)
+# This is becuase of how the table we have scraped is built
+movies |> 
+  count(date) |> 
+  arrange(desc(n))
+# Nonetheless all the information is the same, but just repeated for more than 1 row
+movies |> 
+  group_by(date) |> 
+  filter(n() > 1) |> 
+  ungroup() |> 
+  head(2)
+# We get rid of these repeated rows
+movies <- movies |> 
+  group_by(date) |> 
+  slice_head(n = 1) |> 
+  ungroup()
+
+
+# Joining the databases together
 data <-  movies |> 
   full_join(bill, by = "date") |> 
   full_join(ny, by = "date") |> 
   full_join(guardian, by = "date")
 
 
-
-data <- data %>% # This is for cleaning the columns that where in HTML format
+# This is for cleaning the columns that where in HTML format
+data <- data %>% 
   mutate(across(everything(), ~ str_replace_all(.x, "<.+?>", ""))) %>%
   mutate(across(everything(), ~ if_else(.x == "NA", NA, .x)))
 
 
 
-# Interface
-
-
+# Shiny App Interface
 ui <- fluidPage(
   useShinyjs(),
   theme = shinytheme("flatly"),
