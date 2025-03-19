@@ -193,6 +193,8 @@ head(billboard_clean)
 
 We have run the scraper from 2000-01-01 to 2024-12-31 and stored our result in the following file.
 
+!!! Note, by running the chunk below you will overwrite our existing dataset, this will result in possibly less data being displayed later on.
+
 ```{r, eval = FALSE}
 write.csv(billboard_clean, "data/billboard_database.csv")
 ```
@@ -388,6 +390,8 @@ head(final_best_selling_movies)
 
 We have run the scraper from 2000 to 2023 (included) and stored our result in the following file.
 
+!!! Note, by running the chunk below you will overwrite our existing dataset, this will result in possibly less data being displayed later on.
+
 ```{r, eval = FALSE}
 write.csv(final_best_selling_movies, "data/box_office_database.csv")
 ```
@@ -494,13 +498,21 @@ head(news_nyt)
 
 We have run this function to make repeated calls (always within the limits) to the API for several days. Getting data from 2000-01-01 to 2005-12-31 so far. We plan to expand this in the future.
 
+!!! Note: by running the first chunk below you will append your results to our already existing results. This might cause problem later on with the displaying of the data. By running the second chunk below instead you will overwrite our data and only the data that you have actually fetched will be available to display.
+
 ```{r, eval=FALSE}
+# This is the code we have used
 if (!file.exists("data/nyt_database.csv")) {
     write_csv(news_nyt, "data/nyt_database.csv")
   } else {
     # If the file does exist, then append the result to the already existing CSV file
     write_csv(news_nyt, "data/nyt_database.csv", append = TRUE)
   }
+```
+
+```{r, eval = FALSE}
+# You might want to use this code 
+write_csv(news_nyt, "data/nyt_database.csv")
 ```
 
 # The Guardian API
@@ -598,13 +610,21 @@ head(news_guardian)
 
 We have run this function to make repeated calls (always within the limits) to the API for several days. Getting data from 2000-01-01 to 2007-12-31. We plan to extend this datset as well in the future.
 
+!!! Note: by running the first chunk below you will append your results to our already existing results. This might cause problem later on with the displaying of the data. By running the second chunk below instead you will overwrite our data and only the data that you have actually fetched will be available to display.
+
 ```{r, eval=FALSE}
+# This is the code we have used 
 if (!file.exists("data/guardian_database.csv")) {
     write_csv(news_guardian, "data/guardian_database.csv")
   } else {
     # If the file does exist, then append the result to the already existing CSV file
     write_csv(news_guardian, "data/guardian_database.csv", append = TRUE)
   }
+```
+
+```{r, eval = FALSE}
+# You might want to use this code 
+write_csv(news_guardian, "data/guardian_database.csv")
 ```
 
 # We got the data. What now?

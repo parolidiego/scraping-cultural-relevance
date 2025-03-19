@@ -387,6 +387,9 @@ for years earlier than 2000.</p>
 ## 6 2000-02-05 I Knew I Love… Savag… https://… 1         16             2</code></pre>
 <p>We have run the scraper from 2000-01-01 to 2024-12-31 and stored our
 result in the following file.</p>
+<p>!!! Note, by running the chunk below you will overwrite our existing
+dataset, this will result in possibly less data being displayed later
+on.</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">write.csv</span>(billboard_clean, <span class="st">&quot;data/billboard_database.csv&quot;</span>)</span></code></pre></div>
 </div>
 </div>
@@ -604,6 +607,9 @@ best selling movie.</p>
 ## #   genres &lt;chr&gt;, in_release &lt;chr&gt;, widest_release &lt;chr&gt;</code></pre>
 <p>We have run the scraper from 2000 to 2023 (included) and stored our
 result in the following file.</p>
+<p>!!! Note, by running the chunk below you will overwrite our existing
+dataset, this will result in possibly less data being displayed later
+on.</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">write.csv</span>(final_best_selling_movies, <span class="st">&quot;data/box_office_database.csv&quot;</span>)</span></code></pre></div>
 </div>
 </div>
@@ -730,12 +736,20 @@ date must be at maximum 999 days apart.</p>
 <p>We have run this function to make repeated calls (always within the
 limits) to the API for several days. Getting data from 2000-01-01 to
 2005-12-31 so far. We plan to expand this in the future.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(<span class="st">&quot;data/nyt_database.csv&quot;</span>)) {</span>
-<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_nyt, <span class="st">&quot;data/nyt_database.csv&quot;</span>)</span>
-<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>    <span class="co"># If the file does exist, then append the result to the already existing CSV file</span></span>
-<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_nyt, <span class="st">&quot;data/nyt_database.csv&quot;</span>, <span class="at">append =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>  }</span></code></pre></div>
+<p>!!! Note: by running the first chunk below you will append your
+results to our already existing results. This might cause problem later
+on with the displaying of the data. By running the second chunk below
+instead you will overwrite our data and only the data that you have
+actually fetched will be available to display.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="co"># This is the code we have used</span></span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(<span class="st">&quot;data/nyt_database.csv&quot;</span>)) {</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_nyt, <span class="st">&quot;data/nyt_database.csv&quot;</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>    <span class="co"># If the file does exist, then append the result to the already existing CSV file</span></span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_nyt, <span class="st">&quot;data/nyt_database.csv&quot;</span>, <span class="at">append =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a>  }</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="co"># You might want to use this code </span></span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a><span class="fu">write_csv</span>(news_nyt, <span class="st">&quot;data/nyt_database.csv&quot;</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="the-guardian-api" class="section level1">
@@ -747,85 +761,85 @@ Therefore we expanded our query window to 5 days instead of 2 days.</p>
 <h2>Setting start and end date</h2>
 <p>The function is structured as before with only minor changes to
 format dates as needed for the API call.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="co"># Create a function to get a list of start and end date for every query</span></span>
-<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a>dates_creator <span class="ot">&lt;-</span> <span class="cf">function</span>(start, end) {</span>
-<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>  <span class="co"># To be provided as &quot;yyyy-mm-dd&quot;</span></span>
-<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>  </span>
-<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a>  start_dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(start), <span class="fu">as.Date</span>(end), <span class="at">by=</span><span class="st">&quot;5 days&quot;</span>)</span>
-<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a>  end_dates <span class="ot">&lt;-</span> start_dates <span class="sc">+</span> <span class="dv">4</span></span>
-<span id="cb32-7"><a href="#cb32-7" tabindex="-1"></a>  </span>
-<span id="cb32-8"><a href="#cb32-8" tabindex="-1"></a>  start_dates <span class="ot">&lt;-</span> start_dates <span class="sc">|&gt;</span> </span>
-<span id="cb32-9"><a href="#cb32-9" tabindex="-1"></a>    <span class="fu">as.character</span>() </span>
-<span id="cb32-10"><a href="#cb32-10" tabindex="-1"></a>  </span>
-<span id="cb32-11"><a href="#cb32-11" tabindex="-1"></a>  end_dates <span class="ot">&lt;-</span> end_dates <span class="sc">|&gt;</span> </span>
-<span id="cb32-12"><a href="#cb32-12" tabindex="-1"></a>    <span class="fu">as.character</span>() </span>
-<span id="cb32-13"><a href="#cb32-13" tabindex="-1"></a>  </span>
-<span id="cb32-14"><a href="#cb32-14" tabindex="-1"></a>  list_dates <span class="ot">&lt;-</span> <span class="fu">list</span>(start_dates, end_dates)</span>
-<span id="cb32-15"><a href="#cb32-15" tabindex="-1"></a>  </span>
-<span id="cb32-16"><a href="#cb32-16" tabindex="-1"></a>  <span class="fu">return</span>(list_dates)</span>
-<span id="cb32-17"><a href="#cb32-17" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co"># Create a function to get a list of start and end date for every query</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>dates_creator <span class="ot">&lt;-</span> <span class="cf">function</span>(start, end) {</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>  <span class="co"># To be provided as &quot;yyyy-mm-dd&quot;</span></span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>  </span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>  start_dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(start), <span class="fu">as.Date</span>(end), <span class="at">by=</span><span class="st">&quot;5 days&quot;</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>  end_dates <span class="ot">&lt;-</span> start_dates <span class="sc">+</span> <span class="dv">4</span></span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a>  </span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a>  start_dates <span class="ot">&lt;-</span> start_dates <span class="sc">|&gt;</span> </span>
+<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a>    <span class="fu">as.character</span>() </span>
+<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a>  </span>
+<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a>  end_dates <span class="ot">&lt;-</span> end_dates <span class="sc">|&gt;</span> </span>
+<span id="cb33-12"><a href="#cb33-12" tabindex="-1"></a>    <span class="fu">as.character</span>() </span>
+<span id="cb33-13"><a href="#cb33-13" tabindex="-1"></a>  </span>
+<span id="cb33-14"><a href="#cb33-14" tabindex="-1"></a>  list_dates <span class="ot">&lt;-</span> <span class="fu">list</span>(start_dates, end_dates)</span>
+<span id="cb33-15"><a href="#cb33-15" tabindex="-1"></a>  </span>
+<span id="cb33-16"><a href="#cb33-16" tabindex="-1"></a>  <span class="fu">return</span>(list_dates)</span>
+<span id="cb33-17"><a href="#cb33-17" tabindex="-1"></a>}</span></code></pre></div>
 <p>The Guardian API has a limit of queries set at 500 per day and
 maximum 60 per minutes.</p>
 <p>Each of our query spans 5 days therefore our first start and our last
 start date (the two arguments that we need to provide to the function)
 date must be at maximum 24999 days apart.</p>
 <p>Again the arguments need to be provided as “yyyy-mm-dd”.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co"># Apply function</span></span>
-<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>dates <span class="ot">&lt;-</span> <span class="fu">dates_creator</span>(<span class="st">&quot;2000-01-01&quot;</span>, <span class="st">&quot;2000-01-21&quot;</span>)</span>
-<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a></span>
-<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>start_dates <span class="ot">&lt;-</span> dates[[<span class="dv">1</span>]]</span>
-<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>start_dates</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="co"># Apply function</span></span>
+<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a>dates <span class="ot">&lt;-</span> <span class="fu">dates_creator</span>(<span class="st">&quot;2000-01-01&quot;</span>, <span class="st">&quot;2000-01-21&quot;</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" tabindex="-1"></a>start_dates <span class="ot">&lt;-</span> dates[[<span class="dv">1</span>]]</span>
+<span id="cb34-5"><a href="#cb34-5" tabindex="-1"></a>start_dates</span></code></pre></div>
 <pre><code>## [1] &quot;2000-01-01&quot; &quot;2000-01-06&quot; &quot;2000-01-11&quot; &quot;2000-01-16&quot; &quot;2000-01-21&quot;</code></pre>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>end_dates <span class="ot">&lt;-</span> dates[[<span class="dv">2</span>]]</span>
-<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>end_dates</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a>end_dates <span class="ot">&lt;-</span> dates[[<span class="dv">2</span>]]</span>
+<span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a>end_dates</span></code></pre></div>
 <pre><code>## [1] &quot;2000-01-05&quot; &quot;2000-01-10&quot; &quot;2000-01-15&quot; &quot;2000-01-20&quot; &quot;2000-01-25&quot;</code></pre>
 </div>
 <div id="talking-to-the-api-1" class="section level2">
 <h2>Talking to the API</h2>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a>guardian_news <span class="ot">&lt;-</span> <span class="cf">function</span>(start_date, end_date){</span>
-<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a>  </span>
-<span id="cb37-3"><a href="#cb37-3" tabindex="-1"></a>  api_key <span class="ot">&lt;-</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;API_KEY_GUARDIAN&quot;</span>)</span>
-<span id="cb37-4"><a href="#cb37-4" tabindex="-1"></a>  <span class="cf">if</span> (api_key <span class="sc">==</span> <span class="st">&quot;&quot;</span>) <span class="fu">stop</span>(<span class="st">&quot;API key is missing! Set &#39;API_KEY_GUARDIAN&#39; in your environment.&quot;</span>)</span>
-<span id="cb37-5"><a href="#cb37-5" tabindex="-1"></a>   </span>
-<span id="cb37-6"><a href="#cb37-6" tabindex="-1"></a>  <span class="fu">Sys.sleep</span>(<span class="dv">1</span>)</span>
-<span id="cb37-7"><a href="#cb37-7" tabindex="-1"></a>  </span>
-<span id="cb37-8"><a href="#cb37-8" tabindex="-1"></a>  main_link <span class="ot">&lt;-</span> <span class="st">&quot;https://content.guardianapis.com/search&quot;</span></span>
-<span id="cb37-9"><a href="#cb37-9" tabindex="-1"></a>  </span>
-<span id="cb37-10"><a href="#cb37-10" tabindex="-1"></a>  <span class="co"># Building and performing the API query </span></span>
-<span id="cb37-11"><a href="#cb37-11" tabindex="-1"></a>  data <span class="ot">&lt;-</span> main_link <span class="sc">|&gt;</span> </span>
-<span id="cb37-12"><a href="#cb37-12" tabindex="-1"></a>    <span class="fu">request</span>() <span class="sc">|&gt;</span></span>
-<span id="cb37-13"><a href="#cb37-13" tabindex="-1"></a>    <span class="fu">req_url_query</span>(<span class="st">`</span><span class="at">api-key</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;API_KEY_GUARDIAN&quot;</span>), <span class="at">format =</span> <span class="st">&quot;json&quot;</span>,</span>
-<span id="cb37-14"><a href="#cb37-14" tabindex="-1"></a>                <span class="st">`</span><span class="at">from-date</span><span class="st">`</span> <span class="ot">=</span> start_date, <span class="st">`</span><span class="at">to-date</span><span class="st">`</span> <span class="ot">=</span> end_date, </span>
-<span id="cb37-15"><a href="#cb37-15" tabindex="-1"></a>                <span class="st">`</span><span class="at">order-by</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;relevance&quot;</span>, <span class="st">`</span><span class="at">section</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;world&quot;</span>, </span>
-<span id="cb37-16"><a href="#cb37-16" tabindex="-1"></a>                <span class="st">`</span><span class="at">show-fields</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;headline,trailText,standfirst&quot;</span>,</span>
-<span id="cb37-17"><a href="#cb37-17" tabindex="-1"></a>                <span class="st">`</span><span class="at">page-size</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
-<span id="cb37-18"><a href="#cb37-18" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb37-19"><a href="#cb37-19" tabindex="-1"></a>    <span class="fu">resp_body_json</span>(<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb37-20"><a href="#cb37-20" tabindex="-1"></a>  </span>
-<span id="cb37-21"><a href="#cb37-21" tabindex="-1"></a>  <span class="co"># Selecting relevant data</span></span>
-<span id="cb37-22"><a href="#cb37-22" tabindex="-1"></a>  news <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb37-23"><a href="#cb37-23" tabindex="-1"></a>    <span class="at">date =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>webPublicationDate,</span>
-<span id="cb37-24"><a href="#cb37-24" tabindex="-1"></a>    <span class="at">title =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>webTitle,</span>
-<span id="cb37-25"><a href="#cb37-25" tabindex="-1"></a>    <span class="at">subtitle =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>fields<span class="sc">$</span>trailText,</span>
-<span id="cb37-26"><a href="#cb37-26" tabindex="-1"></a>    <span class="at">standfirst =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>fields<span class="sc">$</span>standfirst,</span>
-<span id="cb37-27"><a href="#cb37-27" tabindex="-1"></a>    <span class="at">url =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>webUrl</span>
-<span id="cb37-28"><a href="#cb37-28" tabindex="-1"></a>  )</span>
-<span id="cb37-29"><a href="#cb37-29" tabindex="-1"></a>  </span>
-<span id="cb37-30"><a href="#cb37-30" tabindex="-1"></a>  <span class="co"># Selecting only the top ranked news per day</span></span>
-<span id="cb37-31"><a href="#cb37-31" tabindex="-1"></a>  news <span class="ot">&lt;-</span> news <span class="sc">|&gt;</span> </span>
-<span id="cb37-32"><a href="#cb37-32" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_remove_all</span>(date,<span class="st">&quot;T.+$&quot;</span>))<span class="sc">|&gt;</span> </span>
-<span id="cb37-33"><a href="#cb37-33" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_trim</span>(date)) <span class="sc">|&gt;</span>     </span>
-<span id="cb37-34"><a href="#cb37-34" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as_date</span>(date)) <span class="sc">|&gt;</span>  </span>
-<span id="cb37-35"><a href="#cb37-35" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">rank =</span> <span class="fu">row_number</span>())  <span class="sc">|&gt;</span> </span>
-<span id="cb37-36"><a href="#cb37-36" tabindex="-1"></a>    <span class="fu">group_by</span>(date) <span class="sc">|&gt;</span> </span>
-<span id="cb37-37"><a href="#cb37-37" tabindex="-1"></a>    <span class="fu">slice_min</span>(rank, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb37-38"><a href="#cb37-38" tabindex="-1"></a>    <span class="fu">ungroup</span>() </span>
-<span id="cb37-39"><a href="#cb37-39" tabindex="-1"></a>  </span>
-<span id="cb37-40"><a href="#cb37-40" tabindex="-1"></a>  <span class="fu">return</span>(news)</span>
-<span id="cb37-41"><a href="#cb37-41" tabindex="-1"></a>}</span>
-<span id="cb37-42"><a href="#cb37-42" tabindex="-1"></a></span>
-<span id="cb37-43"><a href="#cb37-43" tabindex="-1"></a>news_guardian <span class="ot">&lt;-</span> <span class="fu">map2_dfr</span>(start_dates, end_dates, guardian_news)</span>
-<span id="cb37-44"><a href="#cb37-44" tabindex="-1"></a><span class="fu">head</span>(news_guardian)</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a>guardian_news <span class="ot">&lt;-</span> <span class="cf">function</span>(start_date, end_date){</span>
+<span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a>  </span>
+<span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a>  api_key <span class="ot">&lt;-</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;API_KEY_GUARDIAN&quot;</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" tabindex="-1"></a>  <span class="cf">if</span> (api_key <span class="sc">==</span> <span class="st">&quot;&quot;</span>) <span class="fu">stop</span>(<span class="st">&quot;API key is missing! Set &#39;API_KEY_GUARDIAN&#39; in your environment.&quot;</span>)</span>
+<span id="cb38-5"><a href="#cb38-5" tabindex="-1"></a>   </span>
+<span id="cb38-6"><a href="#cb38-6" tabindex="-1"></a>  <span class="fu">Sys.sleep</span>(<span class="dv">1</span>)</span>
+<span id="cb38-7"><a href="#cb38-7" tabindex="-1"></a>  </span>
+<span id="cb38-8"><a href="#cb38-8" tabindex="-1"></a>  main_link <span class="ot">&lt;-</span> <span class="st">&quot;https://content.guardianapis.com/search&quot;</span></span>
+<span id="cb38-9"><a href="#cb38-9" tabindex="-1"></a>  </span>
+<span id="cb38-10"><a href="#cb38-10" tabindex="-1"></a>  <span class="co"># Building and performing the API query </span></span>
+<span id="cb38-11"><a href="#cb38-11" tabindex="-1"></a>  data <span class="ot">&lt;-</span> main_link <span class="sc">|&gt;</span> </span>
+<span id="cb38-12"><a href="#cb38-12" tabindex="-1"></a>    <span class="fu">request</span>() <span class="sc">|&gt;</span></span>
+<span id="cb38-13"><a href="#cb38-13" tabindex="-1"></a>    <span class="fu">req_url_query</span>(<span class="st">`</span><span class="at">api-key</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;API_KEY_GUARDIAN&quot;</span>), <span class="at">format =</span> <span class="st">&quot;json&quot;</span>,</span>
+<span id="cb38-14"><a href="#cb38-14" tabindex="-1"></a>                <span class="st">`</span><span class="at">from-date</span><span class="st">`</span> <span class="ot">=</span> start_date, <span class="st">`</span><span class="at">to-date</span><span class="st">`</span> <span class="ot">=</span> end_date, </span>
+<span id="cb38-15"><a href="#cb38-15" tabindex="-1"></a>                <span class="st">`</span><span class="at">order-by</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;relevance&quot;</span>, <span class="st">`</span><span class="at">section</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;world&quot;</span>, </span>
+<span id="cb38-16"><a href="#cb38-16" tabindex="-1"></a>                <span class="st">`</span><span class="at">show-fields</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&quot;headline,trailText,standfirst&quot;</span>,</span>
+<span id="cb38-17"><a href="#cb38-17" tabindex="-1"></a>                <span class="st">`</span><span class="at">page-size</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">50</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-18"><a href="#cb38-18" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb38-19"><a href="#cb38-19" tabindex="-1"></a>    <span class="fu">resp_body_json</span>(<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-20"><a href="#cb38-20" tabindex="-1"></a>  </span>
+<span id="cb38-21"><a href="#cb38-21" tabindex="-1"></a>  <span class="co"># Selecting relevant data</span></span>
+<span id="cb38-22"><a href="#cb38-22" tabindex="-1"></a>  news <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb38-23"><a href="#cb38-23" tabindex="-1"></a>    <span class="at">date =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>webPublicationDate,</span>
+<span id="cb38-24"><a href="#cb38-24" tabindex="-1"></a>    <span class="at">title =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>webTitle,</span>
+<span id="cb38-25"><a href="#cb38-25" tabindex="-1"></a>    <span class="at">subtitle =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>fields<span class="sc">$</span>trailText,</span>
+<span id="cb38-26"><a href="#cb38-26" tabindex="-1"></a>    <span class="at">standfirst =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>fields<span class="sc">$</span>standfirst,</span>
+<span id="cb38-27"><a href="#cb38-27" tabindex="-1"></a>    <span class="at">url =</span> data<span class="sc">$</span>response<span class="sc">$</span>results<span class="sc">$</span>webUrl</span>
+<span id="cb38-28"><a href="#cb38-28" tabindex="-1"></a>  )</span>
+<span id="cb38-29"><a href="#cb38-29" tabindex="-1"></a>  </span>
+<span id="cb38-30"><a href="#cb38-30" tabindex="-1"></a>  <span class="co"># Selecting only the top ranked news per day</span></span>
+<span id="cb38-31"><a href="#cb38-31" tabindex="-1"></a>  news <span class="ot">&lt;-</span> news <span class="sc">|&gt;</span> </span>
+<span id="cb38-32"><a href="#cb38-32" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_remove_all</span>(date,<span class="st">&quot;T.+$&quot;</span>))<span class="sc">|&gt;</span> </span>
+<span id="cb38-33"><a href="#cb38-33" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_trim</span>(date)) <span class="sc">|&gt;</span>     </span>
+<span id="cb38-34"><a href="#cb38-34" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as_date</span>(date)) <span class="sc">|&gt;</span>  </span>
+<span id="cb38-35"><a href="#cb38-35" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">rank =</span> <span class="fu">row_number</span>())  <span class="sc">|&gt;</span> </span>
+<span id="cb38-36"><a href="#cb38-36" tabindex="-1"></a>    <span class="fu">group_by</span>(date) <span class="sc">|&gt;</span> </span>
+<span id="cb38-37"><a href="#cb38-37" tabindex="-1"></a>    <span class="fu">slice_min</span>(rank, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb38-38"><a href="#cb38-38" tabindex="-1"></a>    <span class="fu">ungroup</span>() </span>
+<span id="cb38-39"><a href="#cb38-39" tabindex="-1"></a>  </span>
+<span id="cb38-40"><a href="#cb38-40" tabindex="-1"></a>  <span class="fu">return</span>(news)</span>
+<span id="cb38-41"><a href="#cb38-41" tabindex="-1"></a>}</span>
+<span id="cb38-42"><a href="#cb38-42" tabindex="-1"></a></span>
+<span id="cb38-43"><a href="#cb38-43" tabindex="-1"></a>news_guardian <span class="ot">&lt;-</span> <span class="fu">map2_dfr</span>(start_dates, end_dates, guardian_news)</span>
+<span id="cb38-44"><a href="#cb38-44" tabindex="-1"></a><span class="fu">head</span>(news_guardian)</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 6
 ##   date       title                               subtitle standfirst url    rank
 ##   &lt;date&gt;     &lt;chr&gt;                               &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt; &lt;int&gt;
@@ -838,12 +852,20 @@ date must be at maximum 24999 days apart.</p>
 <p>We have run this function to make repeated calls (always within the
 limits) to the API for several days. Getting data from 2000-01-01 to
 2007-12-31. We plan to extend this datset as well in the future.</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(<span class="st">&quot;data/guardian_database.csv&quot;</span>)) {</span>
-<span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_guardian, <span class="st">&quot;data/guardian_database.csv&quot;</span>)</span>
-<span id="cb39-3"><a href="#cb39-3" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb39-4"><a href="#cb39-4" tabindex="-1"></a>    <span class="co"># If the file does exist, then append the result to the already existing CSV file</span></span>
-<span id="cb39-5"><a href="#cb39-5" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_guardian, <span class="st">&quot;data/guardian_database.csv&quot;</span>, <span class="at">append =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb39-6"><a href="#cb39-6" tabindex="-1"></a>  }</span></code></pre></div>
+<p>!!! Note: by running the first chunk below you will append your
+results to our already existing results. This might cause problem later
+on with the displaying of the data. By running the second chunk below
+instead you will overwrite our data and only the data that you have
+actually fetched will be available to display.</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a><span class="co"># This is the code we have used </span></span>
+<span id="cb40-2"><a href="#cb40-2" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(<span class="st">&quot;data/guardian_database.csv&quot;</span>)) {</span>
+<span id="cb40-3"><a href="#cb40-3" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_guardian, <span class="st">&quot;data/guardian_database.csv&quot;</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb40-5"><a href="#cb40-5" tabindex="-1"></a>    <span class="co"># If the file does exist, then append the result to the already existing CSV file</span></span>
+<span id="cb40-6"><a href="#cb40-6" tabindex="-1"></a>    <span class="fu">write_csv</span>(news_guardian, <span class="st">&quot;data/guardian_database.csv&quot;</span>, <span class="at">append =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb40-7"><a href="#cb40-7" tabindex="-1"></a>  }</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="co"># You might want to use this code </span></span>
+<span id="cb41-2"><a href="#cb41-2" tabindex="-1"></a><span class="fu">write_csv</span>(news_guardian, <span class="st">&quot;data/guardian_database.csv&quot;</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="we-got-the-data.-what-now" class="section level1">
@@ -855,7 +877,7 @@ script in this directory. By running the code below you will
 automatically open the script which then needs to be executed fully to
 launch the Shiny App.</p>
 <p>Enjoy!</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a><span class="fu">file.edit</span>(<span class="st">&quot;shiny_app.R&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a><span class="fu">file.edit</span>(<span class="st">&quot;shiny_app.R&quot;</span>)</span></code></pre></div>
 </div>
     </section>
   </div>
