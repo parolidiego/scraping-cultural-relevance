@@ -17,6 +17,9 @@ The chuck below automatically installs the required packages in case they are no
 # Cleaning environment
 rm(list = ls())
 
+# Set CRAN mirror
+options(repos = c(CRAN = "https://cran.rstudio.com"))
+
 # List of packages needed
 packages <- c("xml2",
               "httr",
@@ -67,7 +70,8 @@ packages <- c("xml2",
               "rvest",
               "janitor",
               "glue",
-              "usethis")
+              "usethis",
+              "rstudioapi")
 # Loading the packages
 invisible(lapply(packages, library, character.only = TRUE))
 ```
@@ -603,3 +607,8 @@ if (!file.exists("data/guardian_database.csv")) {
   }
 ```
 
+# We got the data. What now?
+
+With the data that we got we have built a Shiny app where one can choose a date and the data for that date will be displayed.
+
+You can find in this directory file `shiny_app.R`
