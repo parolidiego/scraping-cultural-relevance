@@ -1,0 +1,241 @@
+---
+title: "What was going on the day you were born?"
+author: "Diego Paroli and David Pereiro"
+format: 
+  revealjs:
+    smaller: true
+    scrollable: true
+    footer: "Data Harvesting"
+    logo: "images/uc3m.png"  
+    theme: simple
+editor: visual
+---
+
+## What we wanted to get?
+
+<div style="display: flex; justify-content: left; align-items: center; height: 50vh; text-align: left;">
+
+  <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
+    <li class="fragment fade-in" data-fragment-index="1">
+      The most profitable movie in the box office: <strong >Box Office Mojo</strong>
+    </li>
+    <li class="fragment fade-in" data-fragment-index="2">
+      The most popular song: <strong>Billboard Hot 100</strong>
+    </li>
+    <li class="fragment fade-in" data-fragment-index="3">
+      The most relevant news on a certain date: <strong>The New York Times and The Guardian</strong>
+    </li>
+  </ul>
+ 
+</div>
+
+<div class="fragment fade-in" data-fragment-index="4" style="text-align: left;">
+  <strong>Method:</strong> Creating two web-scrapers and using two APIs
+</div>
+
+<div class="fragment fade-in" data-fragment-index="5" style="text-align: left;">
+  <strong>Goal:</strong> Display all the information on an easy-to-use Shiny App
+</div>
+
+---
+
+## General procedure
+
+- We could access all the information by changing the date in the url or in the API request
+
+- We created an specific function for each page to create date vectors with specific formats for each scraper and API
+
+
+![](images/box_office_link.png){.absolute top=300 left=0 width="350" height="30"}
+
+![](images/billboard_dates.png){.absolute top=400 left=0 width="350" height="25"}
+
+![](images/ny_dates.png){.absolute top=300 right=0 width="250" height="250"}
+![](images/guardian_dates.png){.absolute top=300 right=375 width="200" height="150"}
+
+---
+
+## Box Office Mojo scraper
+
+:::: {.columns}
+
+::: {.column width="40%"}
+- Title
+- Image of the movie
+- Date
+- Daily earninings 
+- Worlwide earnings
+- Distributor
+- Genres
+- Running time
+- Description
+:::
+
+::: {.column width="60%"}
+```{r}
+#| echo: TRUE
+#| eval: FALSE
+#| code-line-numbers: "|6||19|28|29"
+
+ movies <- movies  |> 
+    mutate(day = gsub("\\D", "", substr(Date, 1, 6)),
+           month = substr(Date, 1, 3),
+           year = year) |>  
+    mutate(date = paste(day, month, year, sep = " "),
+           date = as.Date(date, format = "%d %b %Y")) |> 
+    select(-c(Date, day, month, year)) |> 
+    mutate(Gross = as.numeric(gsub("\\D", "", Gross))) |> 
+    rename(
+      daily_earnings = Gross,
+      best_selling = "#1 Release")
+#-----------------------------------------------------------
+links <- function(url) {
+  Sys.sleep(2)
+  
+  page <- read_html(url)
+ 
+  links <- page |> 
+    xml_find_all("//td[@class = 'a-text-left mojo-field-type-release mojo-cell-wide']//a") |> 
+    xml_attr(attr = "href") |> 
+    str_remove_all("_\\d+$") |> 
+    unique() %>% 
+    paste0("https://www.boxofficemojo.com", .)
+  
+  return(links)
+}
+#----------------------------------------------------------- 
+xml_find_all("//span[@class='money']")
+xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]")
+```
+
+:::
+::::
+
+---
+
+## Billboard scraper
+
+:::: {.columns}
+
+::: {.column width="40%"}
+
+<div style="display: flex; justify-content: left; align-items: center; height: 40vh; text-align: left;">
+<ul>
+  <li> Name of the song</li>
+  <li> Artist</li>
+  <li> Image of the song</li>
+  <li> Weeks on chart</li>
+  <li> Weeks at #1</li>
+  <li> Last week</li>
+</ul>
+</div>
+:::
+
+::: {.column width="60%"}
+
+The XPaths created to extract the information were quite distinctive:
+
+```{r}
+#| echo: TRUE
+#| eval: FALSE
+
+artistsong <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // lrv-u-flex-grow-1 lrv-u-flex lrv-u-flex-direction-column lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light  lrv-u-padding-l-1@mobile-max']")
+
+weeks_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-background-color-white-064@mobile-max u-hidden@mobile-max']/span")
+
+no1_weeks <- xml_find_all(link_read, "//div/span[@class='c-label  a-font-primary-bold-xxl lrv-u-padding-lr-1 lrv-u-padding-t-025']")
+
+```
+
+:::
+::::
+
+---
+
+## New York Times and The Guardian APIs
+
+
+<div class="fragment fade-in" data-fragment-index="1" style="text-align: left; margin-top: 1em;">
+  <strong>Problem:</strong> Correctly select the most relevant news
+</div>
+
+::::{.columns}
+
+:::{.column width="50%"}
+<div style="display: flex; justify-content: left; align-items: center; height: 50vh; text-align: left; margin-top: 1em;">
+
+  <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
+  
+  <li class="fragment fade-in" data-fragment-index="2">
+    <strong >New York Times</strong>
+    </li>
+    <li class="fragment fade-in" data-fragment-index="2">
+      500 requests per day
+    </li>
+    <li class="fragment fade-in" data-fragment-index="3">
+      5 requests per minute
+    </li>
+    <li class="fragment fade-in" data-fragment-index="4">
+      Up to 10 articles per request
+    </li>
+  </ul>
+ 
+</div>
+:::
+
+:::{.column width="50%"}
+<div style="display: flex; justify-content: left; align-items: center; height: 50vh; text-align: left; margin-top: 1em;">
+
+  <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
+  
+   <li class="fragment fade-in" data-fragment-index="2">
+    <strong >The Guardian</strong>
+    </li>
+    <li class="fragment fade-in" data-fragment-index="2">
+      500 requests per day
+    </li>
+    <li class="fragment fade-in" data-fragment-index="3">
+      60 requests per minute
+    </li>
+    <li class="fragment fade-in" data-fragment-index="4">
+      Up to 50 articles per request
+    </li>
+  </ul>
+ 
+</div>
+:::
+::::
+
+---
+
+## New York Times API
+
+<div style="text-align: center;">
+  <img src="images/dates.png" width="600">
+</div>
+
+```{r}
+#| echo: TRUE
+#| eval: FALSE
+news <- news |> 
+  mutate(date = str_remove_all(date,"T.+$")) |> 
+  mutate(date = str_trim(date)) |>     
+  mutate(date = as_date(date)) |>  
+  mutate(rank = row_number())  |> 
+  group_by(date) |> 
+  slice_min(rank) |> 
+  ungroup() |> 
+  select(-rank)
+```
+
+---
+
+## App
+
+<iframe src="https://davidpereiropol.shinyapps.io/shiny" width="100%" height="500px"></iframe>
+
+
+
+
+
+
