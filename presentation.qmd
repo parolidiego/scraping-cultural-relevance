@@ -13,71 +13,72 @@ editor: visual
 
 ## What we wanted to get?
 
-<div style="display: flex; justify-content: left; align-items: center; height: 50vh; text-align: left;">
+::: {.fragment .fade-in data-fragment-index="1" style="text-align: left; margin-top: 10vh;"}
+<strong>Goal:</strong> extract curious information about dates in the past
+:::
 
-  <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
-    <li class="fragment fade-in" data-fragment-index="1">
-      The most profitable movie in the box office: <strong >Box Office Mojo</strong>
-    </li>
-    <li class="fragment fade-in" data-fragment-index="2">
-      The most popular song: <strong>Billboard Hot 100</strong>
-    </li>
-    <li class="fragment fade-in" data-fragment-index="3">
-      The most relevant news on a certain date: <strong>The New York Times and The Guardian</strong>
-    </li>
-  </ul>
- 
-</div>
+::: {style="display: flex; justify-content: left; align-items: center; margin-top: 5vh; text-align: left;"}
+<ul style="list-style-type: disc; padding-left: 50px; margin: 0; line-height: 2.2em">
 
-<div class="fragment fade-in" data-fragment-index="4" style="text-align: left;">
-  <strong>Method:</strong> Creating two web-scrapers and using two APIs
-</div>
+<li class="fragment fade-in" data-fragment-index="2">
+The most profitable movie in the box office: <strong>Box Office Mojo</strong>
+</li>
 
-<div class="fragment fade-in" data-fragment-index="5" style="text-align: left;">
-  <strong>Goal:</strong> Display all the information on an easy-to-use Shiny App
-</div>
+<li class="fragment fade-in" data-fragment-index="3">
+The most popular song: <strong>Billboard Hot 100</strong>
+</li>
 
----
+<li class="fragment fade-in" data-fragment-index="4">
+The most relevant news: <strong>The New York Times and The Guardian</strong>
+</li>
+
+</ul>
+:::
+
+::: {.fragment .fade-in data-fragment-index="5" style="text-align: left; margin-top: 5vh;"}
+<strong>Method:</strong> 2 scrapers (Billboard & Box Office) + 2 APIs (NYT & The Guardian)
+:::
+
+------------------------------------------------------------------------
 
 ## General procedure
 
-- We could access all the information by changing the date in the url or in the API request
+::: {style="margin-top: 5vh;"}
+- Accessing several years of data by changing the date in the URL or in the API request  
 
-- We created an specific function for each page to create date vectors with specific formats for each scraper and API
+- We created specific functions for each source of data to create date vectors with specific formats and loop over them in our scrapers/API requests
+:::
 
+![](images/box_office_link.png){.absolute top="300" left="0" width="350" height="30"}
 
-![](images/box_office_link.png){.absolute top=300 left=0 width="350" height="30"}
+![](images/billboard_dates.png){.absolute top="400" left="0" width="350" height="25"}
 
-![](images/billboard_dates.png){.absolute top=400 left=0 width="350" height="25"}
+![](images/ny_dates.png){.absolute top="300" right="0" width="250" height="250"} ![](images/guardian_dates.png){.absolute top="300" right="375" width="200" height="150"}
 
-![](images/ny_dates.png){.absolute top=300 right=0 width="250" height="250"}
-![](images/guardian_dates.png){.absolute top=300 right=375 width="200" height="150"}
-
----
+------------------------------------------------------------------------
 
 ## Box Office Mojo scraper
 
-:::: {.columns}
-
-::: {.column width="40%"}
-- Title
-- Image of the movie
-- Date
-- Daily earninings 
-- Worlwide earnings
-- Distributor
-- Genres
-- Running time
-- Description
+::::: {columns}
+::: {.column style="width: 40%; margin-top: 5vh;"}
+-   Title  
+-   Image of the movie  
+-   Date  
+-   Daily earnings  
+-   Worldwide earnings  
+-   Distributor  
+-   Genres  
+-   Running time  
+-   Description
 :::
 
-::: {.column width="60%"}
+::: {.column style="width: 60%; margin-top: 5vh;"}
 ```{r}
 #| echo: TRUE
 #| eval: FALSE
 #| code-line-numbers: "|6||19|28|29"
 
- movies <- movies  |> 
+movies <- movies  |> 
     mutate(day = gsub("\\D", "", substr(Date, 1, 6)),
            month = substr(Date, 1, 3),
            year = year) |>  
@@ -88,6 +89,7 @@ editor: visual
     rename(
       daily_earnings = Gross,
       best_selling = "#1 Release")
+
 #-----------------------------------------------------------
 links <- function(url) {
   Sys.sleep(2)
@@ -103,36 +105,29 @@ links <- function(url) {
   
   return(links)
 }
+
 #----------------------------------------------------------- 
 xml_find_all("//span[@class='money']")
 xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]")
 ```
-
 :::
-::::
+:::::
 
----
+------------------------------------------------------------------------
 
 ## Billboard scraper
 
-:::: {.columns}
-
-::: {.column width="40%"}
-
-<div style="display: flex; justify-content: left; align-items: center; height: 40vh; text-align: left;">
-<ul>
-  <li> Name of the song</li>
-  <li> Artist</li>
-  <li> Image of the song</li>
-  <li> Weeks on chart</li>
-  <li> Weeks at #1</li>
-  <li> Last week</li>
-</ul>
-</div>
+::::: {columns}
+::: {.column style="width: 40%; margin-top: 5vh;"}
+-   Name of the song  
+-   Artist  
+-   Cover image of the song  
+-   Weeks on the chart  
+-   Weeks at #1  
+-   Last week  
 :::
 
-::: {.column width="60%"}
-
+::: {.column style="width: 60%; margin-top: 5vh;"}
 The XPaths created to extract the information were quite distinctive:
 
 ```{r}
@@ -146,73 +141,92 @@ weeks_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item /
 no1_weeks <- xml_find_all(link_read, "//div/span[@class='c-label  a-font-primary-bold-xxl lrv-u-padding-lr-1 lrv-u-padding-t-025']")
 
 ```
-
 :::
-::::
+:::::
 
----
+------------------------------------------------------------------------
 
 ## New York Times and The Guardian APIs
 
+::: {.fragment .fade-in data-fragment-index="1" style="text-align: left; margin-top: 5vh;"}
+<strong>Problem:</strong> Correctly select the most relevant news
 
-<div class="fragment fade-in" data-fragment-index="1" style="text-align: left; margin-top: 1em;">
-  <strong>Problem:</strong> Correctly select the most relevant news
-</div>
-
-::::{.columns}
-
-:::{.column width="50%"}
-<div style="display: flex; justify-content: left; align-items: center; height: 50vh; text-align: left; margin-top: 1em;">
-
-  <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
-  
-  <li class="fragment fade-in" data-fragment-index="2">
-    <strong >New York Times</strong>
-    </li>
-    <li class="fragment fade-in" data-fragment-index="2">
-      500 requests per day
-    </li>
-    <li class="fragment fade-in" data-fragment-index="3">
-      5 requests per minute
-    </li>
-    <li class="fragment fade-in" data-fragment-index="4">
-      Up to 10 articles per request
-    </li>
-  </ul>
- 
-</div>
+<strong>Solution:</strong> Filter for front page articles only. Order articles by relevance. Filter for specific sections.
 :::
 
-:::{.column width="50%"}
-<div style="display: flex; justify-content: left; align-items: center; height: 50vh; text-align: left; margin-top: 1em;">
+::::::: columns
+:::: {.column width="50%"}
+::: {style="display: flex; justify-content: left; align-items: center; text-align: left; margin-top: 5vh;"}
+<ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
 
-  <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
-  
-   <li class="fragment fade-in" data-fragment-index="2">
-    <strong >The Guardian</strong>
-    </li>
-    <li class="fragment fade-in" data-fragment-index="2">
-      500 requests per day
-    </li>
-    <li class="fragment fade-in" data-fragment-index="3">
-      60 requests per minute
-    </li>
-    <li class="fragment fade-in" data-fragment-index="4">
-      Up to 50 articles per request
-    </li>
-  </ul>
- 
-</div>
+<li class="fragment fade-in" data-fragment-index="2">
+
+<strong >New York Times</strong>
+
+</li>
+
+<li class="fragment fade-in" data-fragment-index="2">
+
+500 requests per day
+
+</li>
+
+<li class="fragment fade-in" data-fragment-index="3">
+
+5 requests per minute
+
+</li>
+
+<li class="fragment fade-in" data-fragment-index="4">
+
+Up to 10 articles per request
+
+</li>
+
+</ul>
 :::
 ::::
 
----
+:::: {.column width="50%"}
+::: {style="display: flex; justify-content: left; align-items: center; text-align: left; margin-top: 5vh;"}
+<ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
+
+<li class="fragment fade-in" data-fragment-index="2">
+
+<strong >The Guardian</strong>
+
+</li>
+
+<li class="fragment fade-in" data-fragment-index="2">
+
+500 requests per day
+
+</li>
+
+<li class="fragment fade-in" data-fragment-index="3">
+
+60 requests per minute
+
+</li>
+
+<li class="fragment fade-in" data-fragment-index="4">
+
+Up to 50 articles per request
+
+</li>
+
+</ul>
+:::
+::::
+:::::::
+
+------------------------------------------------------------------------
 
 ## New York Times API
 
-<div style="text-align: center;">
-  <img src="images/dates.png" width="600">
-</div>
+::: {style="text-align: center;"}
+<img src="images/dates.png" width="600"/>
+:::
 
 ```{r}
 #| echo: TRUE
@@ -228,14 +242,10 @@ news <- news |>
   select(-rank)
 ```
 
----
+------------------------------------------------------------------------
 
 ## App
 
-<iframe src="https://davidpereiropol.shinyapps.io/shiny" width="100%" height="500px"></iframe>
+<iframe src="https://davidpereiropol.shinyapps.io/shiny" width="100%" height="500px">
 
-
-
-
-
-
+</iframe>
