@@ -11,7 +11,7 @@ format:
 editor: visual
 ---
 
-## What we wanted to get?
+## What do we wanted to get?
 
 ::: {.fragment .fade-in data-fragment-index="1" style="text-align: left; margin-top: 10vh;"}
 <strong>Goal:</strong> extract curious information about dates in the past
@@ -53,63 +53,44 @@ The most relevant news: <strong>The New York Times and The Guardian</strong>
 
 ![](images/billboard_dates.png){.absolute top="400" left="0" width="350" height="25"}
 
-![](images/ny_dates.png){.absolute top="300" right="0" width="250" height="250"} ![](images/guardian_dates.png){.absolute top="300" right="375" width="200" height="150"}
+![](images/ny_dates.png){.absolute top="300" right="0" width="250" height="250"} 
+![](images/guardian_dates.png){.absolute top="300" right="375" width="200" height="150"}
 
-------------------------------------------------------------------------
+-----------------------------------------------------------------------
 
 ## Box Office Mojo scraper
 
-::::: {columns}
-::: {.column style="width: 40%; margin-top: 5vh;"}
--   Title  
--   Image of the movie  
--   Date  
--   Daily earnings  
--   Worldwide earnings  
--   Distributor  
--   Genres  
--   Running time  
--   Description
+::::: {rows}
+::: {.row style="margin-top: 0vh;"}
+![](images/boxoffice.png)
 :::
 
-::: {.column style="width: 60%; margin-top: 5vh;"}
-```{r}
-#| echo: TRUE
-#| eval: FALSE
-#| code-line-numbers: "|6||19|28|29"
-
-movies <- movies  |> 
-    mutate(day = gsub("\\D", "", substr(Date, 1, 6)),
-           month = substr(Date, 1, 3),
-           year = year) |>  
-    mutate(date = paste(day, month, year, sep = " "),
-           date = as.Date(date, format = "%d %b %Y")) |> 
-    select(-c(Date, day, month, year)) |> 
-    mutate(Gross = as.numeric(gsub("\\D", "", Gross))) |> 
-    rename(
-      daily_earnings = Gross,
-      best_selling = "#1 Release")
-
-#-----------------------------------------------------------
-links <- function(url) {
-  Sys.sleep(2)
+::: {.row style="position: relative;"}
+<ul style="display: flex; list-style-type: none; padding: 0; margin: 0;">
+  <li style="width: 33%; padding: 0px;">
+    <ul>
+      <li>Title</li>
+      <li>Image of the movie</li>
+      <li>Date</li>
+    </ul>
+  </li>
   
-  page <- read_html(url)
- 
-  links <- page |> 
-    xml_find_all("//td[@class = 'a-text-left mojo-field-type-release mojo-cell-wide']//a") |> 
-    xml_attr(attr = "href") |> 
-    str_remove_all("_\\d+$") |> 
-    unique() %>% 
-    paste0("https://www.boxofficemojo.com", .)
-  
-  return(links)
-}
+  <li style="width: 33%; padding: 0px;">
+    <ul>
+      <li>Daily earnings</li>
+      <li>Worldwide earnings</li>
+      <li>Distributor</li>
+    </ul>
+  </li>
 
-#----------------------------------------------------------- 
-xml_find_all("//span[@class='money']")
-xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]")
-```
+  <li style="width: 33%; padding: 0px;">
+    <ul>
+      <li>Genres</li>
+      <li>Running time</li>
+      <li>Description</li>
+    </ul>
+  </li>
+</ul>
 :::
 :::::
 
@@ -117,30 +98,41 @@ xml_find_all("//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-
 
 ## Billboard scraper
 
-::::: {columns}
-::: {.column style="width: 40%; margin-top: 5vh;"}
--   Name of the song  
--   Artist  
--   Cover image of the song  
--   Weeks on the chart  
--   Weeks at #1  
--   Last week  
+::::: {rows}
+::: {.row style="margin-top: 5vh;"}
+Extracting data for #1 song each weekly edition of the chart.
+
+<ul style="display: flex; flex-wrap: wrap; list-style-type: none; padding: 0; margin: 0;">
+  <li style="width: 50%; padding: 10px; box-sizing: border-box;">
+    <ul>
+      <li>Name of the song</li>
+      <li>Artist</li>
+      <li>Cover image of the song</li>
+    </ul>
+  </li>
+  
+  <li style="width: 50%; padding: 10px; box-sizing: border-box;">
+    <ul>
+      <li>Weeks on the chart</li>
+      <li>Weeks at #1</li>
+      <li>Last week</li>
+    </ul>
+  </li>
+</ul>
 :::
 
-::: {.column style="width: 60%; margin-top: 5vh;"}
-The XPaths created to extract the information were quite distinctive:
+::: {.row style="margin-top: 5vh;"}
+Weekly data needs to be changed to daily data
 
 ```{r}
 #| echo: TRUE
 #| eval: FALSE
 
-artistsong <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // lrv-u-flex-grow-1 lrv-u-flex lrv-u-flex-direction-column lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light  lrv-u-padding-l-1@mobile-max']")
-
-weeks_info <- xml_find_all(link_read, "//li[@class='o-chart-results-list__item // a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-background-color-white-064@mobile-max u-hidden@mobile-max']/span")
-
-no1_weeks <- xml_find_all(link_read, "//div/span[@class='c-label  a-font-primary-bold-xxl lrv-u-padding-lr-1 lrv-u-padding-t-025']")
-
+bill <- bill %>%
+  complete(date = seq(min(date), max(date), by = "day")) %>%
+  fill(-date, .direction = "up") 
 ```
+
 :::
 :::::
 
@@ -149,7 +141,7 @@ no1_weeks <- xml_find_all(link_read, "//div/span[@class='c-label  a-font-primary
 ## New York Times and The Guardian APIs
 
 ::: {.fragment .fade-in data-fragment-index="1" style="text-align: left; margin-top: 5vh;"}
-<strong>Problem:</strong> Correctly select the most relevant news
+<strong>Problem:</strong> Correctly select the most relevant news.
 
 <strong>Solution:</strong> Filter for front page articles only. Order articles by relevance. Filter for specific sections.
 :::

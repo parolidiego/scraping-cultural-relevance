@@ -403,8 +403,8 @@ Diego Paroli and David Pereiro
 </div>
 
 </section>
-<section id="what-we-wanted-to-get" class="slide level2">
-<h2>What we wanted to get?</h2>
+<section id="what-do-we-wanted-to-get" class="slide level2">
+<h2>What do we wanted to get?</h2>
 <div class="fragment fade-in" data-fragment-index="1" style="text-align: left; margin-top: 10vh;">
 <p><strong>Goal:</strong> extract curious information about dates in the past</p>
 </div>
@@ -439,96 +439,103 @@ The most relevant news: <strong>The New York Times and The Guardian</strong>
 </section>
 <section id="box-office-mojo-scraper" class="slide level2">
 <h2>Box Office Mojo scraper</h2>
-<div class="{columns}">
-<div class="column" style="width: 40%; margin-top: 5vh;">
-<ul>
-<li>Title<br>
-</li>
-<li>Image of the movie<br>
-</li>
-<li>Date<br>
-</li>
-<li>Daily earnings<br>
-</li>
-<li>Worldwide earnings<br>
-</li>
-<li>Distributor<br>
-</li>
-<li>Genres<br>
-</li>
-<li>Running time<br>
-</li>
-<li>Description</li>
-</ul>
-</div><div class="column" style="width: 60%; margin-top: 5vh;">
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1" data-code-line-numbers="|6||19|28|29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a>movies <span class="ot">&lt;-</span> movies  <span class="sc">|&gt;</span> </span>
-<span id="cb1-2"><a href=""></a>    <span class="fu">mutate</span>(<span class="at">day =</span> <span class="fu">gsub</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">D"</span>, <span class="st">""</span>, <span class="fu">substr</span>(Date, <span class="dv">1</span>, <span class="dv">6</span>)),</span>
-<span id="cb1-3"><a href=""></a>           <span class="at">month =</span> <span class="fu">substr</span>(Date, <span class="dv">1</span>, <span class="dv">3</span>),</span>
-<span id="cb1-4"><a href=""></a>           <span class="at">year =</span> year) <span class="sc">|&gt;</span>  </span>
-<span id="cb1-5"><a href=""></a>    <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">paste</span>(day, month, year, <span class="at">sep =</span> <span class="st">" "</span>),</span>
-<span id="cb1-6"><a href=""></a>           <span class="at">date =</span> <span class="fu">as.Date</span>(date, <span class="at">format =</span> <span class="st">"%d %b %Y"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb1-7"><a href=""></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(Date, day, month, year)) <span class="sc">|&gt;</span> </span>
-<span id="cb1-8"><a href=""></a>    <span class="fu">mutate</span>(<span class="at">Gross =</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">D"</span>, <span class="st">""</span>, Gross))) <span class="sc">|&gt;</span> </span>
-<span id="cb1-9"><a href=""></a>    <span class="fu">rename</span>(</span>
-<span id="cb1-10"><a href=""></a>      <span class="at">daily_earnings =</span> Gross,</span>
-<span id="cb1-11"><a href=""></a>      <span class="at">best_selling =</span> <span class="st">"#1 Release"</span>)</span>
-<span id="cb1-12"><a href=""></a></span>
-<span id="cb1-13"><a href=""></a><span class="co">#-----------------------------------------------------------</span></span>
-<span id="cb1-14"><a href=""></a>links <span class="ot">&lt;-</span> <span class="cf">function</span>(url) {</span>
-<span id="cb1-15"><a href=""></a>  <span class="fu">Sys.sleep</span>(<span class="dv">2</span>)</span>
-<span id="cb1-16"><a href=""></a>  </span>
-<span id="cb1-17"><a href=""></a>  page <span class="ot">&lt;-</span> <span class="fu">read_html</span>(url)</span>
-<span id="cb1-18"><a href=""></a> </span>
-<span id="cb1-19"><a href=""></a>  links <span class="ot">&lt;-</span> page <span class="sc">|&gt;</span> </span>
-<span id="cb1-20"><a href=""></a>    <span class="fu">xml_find_all</span>(<span class="st">"//td[@class = 'a-text-left mojo-field-type-release mojo-cell-wide']//a"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb1-21"><a href=""></a>    <span class="fu">xml_attr</span>(<span class="at">attr =</span> <span class="st">"href"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb1-22"><a href=""></a>    <span class="fu">str_remove_all</span>(<span class="st">"_</span><span class="sc">\\</span><span class="st">d+$"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb1-23"><a href=""></a>    <span class="fu">unique</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb1-24"><a href=""></a>    <span class="fu">paste0</span>(<span class="st">"https://www.boxofficemojo.com"</span>, .)</span>
-<span id="cb1-25"><a href=""></a>  </span>
-<span id="cb1-26"><a href=""></a>  <span class="fu">return</span>(links)</span>
-<span id="cb1-27"><a href=""></a>}</span>
-<span id="cb1-28"><a href=""></a></span>
-<span id="cb1-29"><a href=""></a><span class="co">#----------------------------------------------------------- </span></span>
-<span id="cb1-30"><a href=""></a><span class="fu">xml_find_all</span>(<span class="st">"//span[@class='money']"</span>)</span>
-<span id="cb1-31"><a href=""></a><span class="fu">xml_find_all</span>(<span class="st">"//div[@class = 'a-section a-spacing-none mojo-summary-values mojo-hidden-from-mobile']//span[not(@*)]"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="{rows}">
+<div class="row" style="margin-top: 0vh;">
+<p><img data-src="images/boxoffice.png"></p>
 </div>
-</div></div>
+<div class="row" style="position: relative;">
+<ul style="display: flex; list-style-type: none; padding: 0; margin: 0;">
+<li style="width: 33%; padding: 0px;">
+<ul>
+<li>
+Title
+</li>
+<li>
+Image of the movie
+</li>
+<li>
+Date
+</li>
+</ul>
+</li>
+<li style="width: 33%; padding: 0px;">
+<ul>
+<li>
+Daily earnings
+</li>
+<li>
+Worldwide earnings
+</li>
+<li>
+Distributor
+</li>
+</ul>
+</li>
+<li style="width: 33%; padding: 0px;">
+<ul>
+<li>
+Genres
+</li>
+<li>
+Running time
+</li>
+<li>
+Description
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 </section>
 <section id="billboard-scraper" class="slide level2">
 <h2>Billboard scraper</h2>
-<div class="{columns}">
-<div class="column" style="width: 40%; margin-top: 5vh;">
+<div class="{rows}">
+<div class="row" style="margin-top: 5vh;">
+<p>Extracting data for #1 song each weekly edition of the chart.</p>
+<ul style="display: flex; flex-wrap: wrap; list-style-type: none; padding: 0; margin: 0;">
+<li style="width: 50%; padding: 10px; box-sizing: border-box;">
 <ul>
-<li>Name of the song<br>
+<li>
+Name of the song
 </li>
-<li>Artist<br>
+<li>
+Artist
 </li>
-<li>Cover image of the song<br>
-</li>
-<li>Weeks on the chart<br>
-</li>
-<li>Weeks at #1<br>
-</li>
-<li>Last week<br>
+<li>
+Cover image of the song
 </li>
 </ul>
-</div><div class="column" style="width: 60%; margin-top: 5vh;">
-<p>The XPaths created to extract the information were quite distinctive:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a>artistsong <span class="ot">&lt;-</span> <span class="fu">xml_find_all</span>(link_read, <span class="st">"//li[@class='o-chart-results-list__item // lrv-u-flex-grow-1 lrv-u-flex lrv-u-flex-direction-column lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light  lrv-u-padding-l-1@mobile-max']"</span>)</span>
-<span id="cb2-2"><a href=""></a></span>
-<span id="cb2-3"><a href=""></a>weeks_info <span class="ot">&lt;-</span> <span class="fu">xml_find_all</span>(link_read, <span class="st">"//li[@class='o-chart-results-list__item // a-chart-color u-width-72 u-width-55@mobile-max u-width-55@tablet-only lrv-u-flex lrv-u-flex-shrink-0 lrv-u-align-items-center lrv-u-justify-content-center lrv-u-border-b-1 u-border-b-0@mobile-max lrv-u-border-color-grey-light u-background-color-white-064@mobile-max u-hidden@mobile-max']/span"</span>)</span>
-<span id="cb2-4"><a href=""></a></span>
-<span id="cb2-5"><a href=""></a>no1_weeks <span class="ot">&lt;-</span> <span class="fu">xml_find_all</span>(link_read, <span class="st">"//div/span[@class='c-label  a-font-primary-bold-xxl lrv-u-padding-lr-1 lrv-u-padding-t-025']"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</li>
+<li style="width: 50%; padding: 10px; box-sizing: border-box;">
+<ul>
+<li>
+Weeks on the chart
+</li>
+<li>
+Weeks at #1
+</li>
+<li>
+Last week
+</li>
+</ul>
+</li>
+</ul>
 </div>
-</div></div>
+<div class="row" style="margin-top: 5vh;">
+<p>Weekly data needs to be changed to daily data</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a>bill <span class="ot">&lt;-</span> bill <span class="sc">%&gt;%</span></span>
+<span id="cb1-2"><a href=""></a>  <span class="fu">complete</span>(<span class="at">date =</span> <span class="fu">seq</span>(<span class="fu">min</span>(date), <span class="fu">max</span>(date), <span class="at">by =</span> <span class="st">"day"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-3"><a href=""></a>  <span class="fu">fill</span>(<span class="sc">-</span>date, <span class="at">.direction =</span> <span class="st">"up"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
 </section>
 <section id="new-york-times-and-the-guardian-apis" class="slide level2">
 <h2>New York Times and The Guardian APIs</h2>
 <div class="fragment fade-in" data-fragment-index="1" style="text-align: left; margin-top: 5vh;">
-<p><strong>Problem:</strong> Correctly select the most relevant news</p>
+<p><strong>Problem:</strong> Correctly select the most relevant new.s</p>
 <p><strong>Solution:</strong> Filter for front page articles only. Order articles by relevance. Filter for specific sections.</p>
 </div>
 <div class="columns">
@@ -574,15 +581,15 @@ The most relevant news: <strong>The New York Times and The Guardian</strong>
 <p><img src="images/dates.png" width="600"></p>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a>news <span class="ot">&lt;-</span> news <span class="sc">|&gt;</span> </span>
-<span id="cb3-2"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_remove_all</span>(date,<span class="st">"T.+$"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb3-3"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_trim</span>(date)) <span class="sc">|&gt;</span>     </span>
-<span id="cb3-4"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as_date</span>(date)) <span class="sc">|&gt;</span>  </span>
-<span id="cb3-5"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">rank =</span> <span class="fu">row_number</span>())  <span class="sc">|&gt;</span> </span>
-<span id="cb3-6"><a href=""></a>  <span class="fu">group_by</span>(date) <span class="sc">|&gt;</span> </span>
-<span id="cb3-7"><a href=""></a>  <span class="fu">slice_min</span>(rank) <span class="sc">|&gt;</span> </span>
-<span id="cb3-8"><a href=""></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb3-9"><a href=""></a>  <span class="fu">select</span>(<span class="sc">-</span>rank)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a>news <span class="ot">&lt;-</span> news <span class="sc">|&gt;</span> </span>
+<span id="cb2-2"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_remove_all</span>(date,<span class="st">"T.+$"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb2-3"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_trim</span>(date)) <span class="sc">|&gt;</span>     </span>
+<span id="cb2-4"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as_date</span>(date)) <span class="sc">|&gt;</span>  </span>
+<span id="cb2-5"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">rank =</span> <span class="fu">row_number</span>())  <span class="sc">|&gt;</span> </span>
+<span id="cb2-6"><a href=""></a>  <span class="fu">group_by</span>(date) <span class="sc">|&gt;</span> </span>
+<span id="cb2-7"><a href=""></a>  <span class="fu">slice_min</span>(rank) <span class="sc">|&gt;</span> </span>
+<span id="cb2-8"><a href=""></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb2-9"><a href=""></a>  <span class="fu">select</span>(<span class="sc">-</span>rank)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="app" class="slide level2">
