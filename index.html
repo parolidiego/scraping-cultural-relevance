@@ -411,13 +411,13 @@ Diego Paroli and David Pereiro
 <div style="display: flex; justify-content: left; align-items: center; margin-top: 5vh; text-align: left;">
 <ul style="list-style-type: disc; padding-left: 50px; margin: 0; line-height: 2.2em">
 <li class="fragment fade-in" data-fragment-index="2">
-The most profitable movie in the box office: <strong>Box Office Mojo</strong>
+<p>The most profitable movie in the box office: <strong>Box Office Mojo</strong></p>
 </li>
 <li class="fragment fade-in" data-fragment-index="3">
-The most popular song: <strong>Billboard Hot 100</strong>
+<p>The most popular song: <strong>Billboard Hot 100</strong></p>
 </li>
 <li class="fragment fade-in" data-fragment-index="4">
-The most relevant news: <strong>The New York Times and The Guardian</strong>
+<p>The most relevant news: <strong>The New York Times and The Guardian</strong></p>
 </li>
 </ul>
 </div>
@@ -492,7 +492,7 @@ Description
 <h2>Billboard scraper</h2>
 <div class="{rows}">
 <div class="row" style="margin-top: 5vh;">
-<p>Extracting data for #1 song each weekly edition of the chart.</p>
+<p>Extracting data for the #1 song in each weekly edition of the chart.</p>
 <ul style="display: flex; flex-wrap: wrap; list-style-type: none; padding: 0; margin: 0;">
 <li style="width: 50%; padding: 10px; box-sizing: border-box;">
 <ul>
@@ -523,7 +523,7 @@ Last week
 </ul>
 </div>
 <div class="row" style="margin-top: 5vh;">
-<p>Weekly data needs to be changed to daily data</p>
+<p>Weekly data needs to be changed to daily data:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a>bill <span class="ot">&lt;-</span> bill <span class="sc">%&gt;%</span></span>
 <span id="cb1-2"><a href=""></a>  <span class="fu">complete</span>(<span class="at">date =</span> <span class="fu">seq</span>(<span class="fu">min</span>(date), <span class="fu">max</span>(date), <span class="at">by =</span> <span class="st">"day"</span>)) <span class="sc">%&gt;%</span></span>
@@ -534,15 +534,11 @@ Last week
 </section>
 <section id="new-york-times-and-the-guardian-apis" class="slide level2">
 <h2>New York Times and The Guardian APIs</h2>
-<div class="fragment fade-in" data-fragment-index="1" style="text-align: left; margin-top: 5vh;">
-<p><strong>Problem:</strong> Correctly select the most relevant new.s</p>
-<p><strong>Solution:</strong> Filter for front page articles only. Order articles by relevance. Filter for specific sections.</p>
-</div>
 <div class="columns">
 <div class="column" style="width:50%;">
 <div style="display: flex; justify-content: left; align-items: center; text-align: left; margin-top: 5vh;">
 <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
-<li class="fragment fade-in" data-fragment-index="2">
+<li class="fragment fade-in" data-fragment-index="1">
 <p><strong>New York Times</strong></p>
 </li>
 <li class="fragment fade-in" data-fragment-index="2">
@@ -559,7 +555,7 @@ Last week
 </div><div class="column" style="width:50%;">
 <div style="display: flex; justify-content: left; align-items: center; text-align: left; margin-top: 5vh;">
 <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
-<li class="fragment fade-in" data-fragment-index="2">
+<li class="fragment fade-in" data-fragment-index="1">
 <p><strong>The Guardian</strong></p>
 </li>
 <li class="fragment fade-in" data-fragment-index="2">
@@ -574,12 +570,57 @@ Last week
 </ul>
 </div>
 </div></div>
-</section>
-<section id="new-york-times-api" class="slide level2">
-<h2>New York Times API</h2>
-<div style="text-align: center;">
-<p><img src="images/dates.png" width="600"></p>
+<div class="fragment fade-in" data-fragment-index="5" style="text-align: left; margin-top: 10vh;">
+<p>
+→ Requests over multiple dates to collect more data in a smaller amount of time
+</p>
 </div>
+<div class="fragment fade-in" data-fragment-index="6" style="text-align: left; margin-top: 5vh;">
+<p>Data about:</p>
+<ul style="display: flex; flex-wrap: wrap; list-style-type: none; padding: 0; margin: 0;">
+<li style="width: 33%; padding: 10px; box-sizing: border-box;">
+<ul>
+<li>
+Headline of the article
+</li>
+</ul>
+</li>
+<li style="width: 33%; padding: 10px; box-sizing: border-box;">
+<ul>
+<li>
+Summary of the article
+</li>
+</ul>
+</li>
+<li style="width: 33%; padding: 10px; box-sizing: border-box;">
+<ul>
+<li>
+URL of the article
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="select-the-most-important-news" class="slide level2 scrollable">
+<h2>Select the most important news</h2>
+<div class="fragment fade-in" data-fragment-index="1" style="text-align: left; margin-top: 5vh;">
+<p><strong>Problem:</strong> Correctly select the most relevant news.</p>
+<strong>Solution:</strong> <br>
+<ol style="margin-left: 60px;">
+<li>
+Filter for front page articles only or filter for specific sections.
+</li>
+<li>
+Order articles by relevance.
+</li>
+<li>
+Group by date and select the most important.
+</li>
+</ol>
+</div>
+<div class="fragment fade-in" data-fragment-index="2" style="text-align: center; margin-top: -2vh;">
+<p><img src="images/dates.png" width="600"></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a>news <span class="ot">&lt;-</span> news <span class="sc">|&gt;</span> </span>
 <span id="cb2-2"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">str_remove_all</span>(date,<span class="st">"T.+$"</span>)) <span class="sc">|&gt;</span> </span>
@@ -590,6 +631,7 @@ Last week
 <span id="cb2-7"><a href=""></a>  <span class="fu">slice_min</span>(rank) <span class="sc">|&gt;</span> </span>
 <span id="cb2-8"><a href=""></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb2-9"><a href=""></a>  <span class="fu">select</span>(<span class="sc">-</span>rank)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </div>
 </section>
 <section id="app" class="slide level2">

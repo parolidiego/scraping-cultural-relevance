@@ -21,15 +21,21 @@ editor: visual
 <ul style="list-style-type: disc; padding-left: 50px; margin: 0; line-height: 2.2em">
 
 <li class="fragment fade-in" data-fragment-index="2">
+
 The most profitable movie in the box office: <strong>Box Office Mojo</strong>
+
 </li>
 
 <li class="fragment fade-in" data-fragment-index="3">
+
 The most popular song: <strong>Billboard Hot 100</strong>
+
 </li>
 
 <li class="fragment fade-in" data-fragment-index="4">
+
 The most relevant news: <strong>The New York Times and The Guardian</strong>
+
 </li>
 
 </ul>
@@ -44,19 +50,18 @@ The most relevant news: <strong>The New York Times and The Guardian</strong>
 ## General procedure
 
 ::: {style="margin-top: 5vh;"}
-- Accessing several years of data by changing the date in the URL or in the API request  
+-   Accessing several years of data by changing the date in the URL or in the API request
 
-- We created specific functions for each source of data to create date vectors with specific formats and loop over them in our scrapers/API requests
+-   We created specific functions for each source of data to create date vectors with specific formats and loop over them in our scrapers/API requests
 :::
 
 ![](images/box_office_link.png){.absolute top="300" left="0" width="350" height="30"}
 
 ![](images/billboard_dates.png){.absolute top="400" left="0" width="350" height="25"}
 
-![](images/ny_dates.png){.absolute top="300" right="0" width="250" height="250"} 
-![](images/guardian_dates.png){.absolute top="300" right="375" width="200" height="150"}
+![](images/ny_dates.png){.absolute top="300" right="0" width="250" height="250"} ![](images/guardian_dates.png){.absolute top="300" right="375" width="200" height="150"}
 
------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 ## Box Office Mojo scraper
 
@@ -67,29 +72,49 @@ The most relevant news: <strong>The New York Times and The Guardian</strong>
 
 ::: {.row style="position: relative;"}
 <ul style="display: flex; list-style-type: none; padding: 0; margin: 0;">
-  <li style="width: 33%; padding: 0px;">
-    <ul>
-      <li>Title</li>
-      <li>Image of the movie</li>
-      <li>Date</li>
-    </ul>
-  </li>
-  
-  <li style="width: 33%; padding: 0px;">
-    <ul>
-      <li>Daily earnings</li>
-      <li>Worldwide earnings</li>
-      <li>Distributor</li>
-    </ul>
-  </li>
 
-  <li style="width: 33%; padding: 0px;">
-    <ul>
-      <li>Genres</li>
-      <li>Running time</li>
-      <li>Description</li>
-    </ul>
-  </li>
+<li style="width: 33%; padding: 0px;">
+
+<ul>
+
+<li>Title</li>
+
+<li>Image of the movie</li>
+
+<li>Date</li>
+
+</ul>
+
+</li>
+
+<li style="width: 33%; padding: 0px;">
+
+<ul>
+
+<li>Daily earnings</li>
+
+<li>Worldwide earnings</li>
+
+<li>Distributor</li>
+
+</ul>
+
+</li>
+
+<li style="width: 33%; padding: 0px;">
+
+<ul>
+
+<li>Genres</li>
+
+<li>Running time</li>
+
+<li>Description</li>
+
+</ul>
+
+</li>
+
 </ul>
 :::
 :::::
@@ -100,29 +125,43 @@ The most relevant news: <strong>The New York Times and The Guardian</strong>
 
 ::::: {rows}
 ::: {.row style="margin-top: 5vh;"}
-Extracting data for #1 song each weekly edition of the chart.
+Extracting data for the #1 song in each weekly edition of the chart.
 
 <ul style="display: flex; flex-wrap: wrap; list-style-type: none; padding: 0; margin: 0;">
-  <li style="width: 50%; padding: 10px; box-sizing: border-box;">
-    <ul>
-      <li>Name of the song</li>
-      <li>Artist</li>
-      <li>Cover image of the song</li>
-    </ul>
-  </li>
-  
-  <li style="width: 50%; padding: 10px; box-sizing: border-box;">
-    <ul>
-      <li>Weeks on the chart</li>
-      <li>Weeks at #1</li>
-      <li>Last week</li>
-    </ul>
-  </li>
+
+<li style="width: 50%; padding: 10px; box-sizing: border-box;">
+
+<ul>
+
+<li>Name of the song</li>
+
+<li>Artist</li>
+
+<li>Cover image of the song</li>
+
+</ul>
+
+</li>
+
+<li style="width: 50%; padding: 10px; box-sizing: border-box;">
+
+<ul>
+
+<li>Weeks on the chart</li>
+
+<li>Weeks at #1</li>
+
+<li>Last week</li>
+
+</ul>
+
+</li>
+
 </ul>
 :::
 
 ::: {.row style="margin-top: 5vh;"}
-Weekly data needs to be changed to daily data
+Weekly data needs to be changed to daily data:
 
 ```{r}
 #| echo: TRUE
@@ -132,7 +171,6 @@ bill <- bill %>%
   complete(date = seq(min(date), max(date), by = "day")) %>%
   fill(-date, .direction = "up") 
 ```
-
 :::
 :::::
 
@@ -140,18 +178,12 @@ bill <- bill %>%
 
 ## New York Times and The Guardian APIs
 
-::: {.fragment .fade-in data-fragment-index="1" style="text-align: left; margin-top: 5vh;"}
-<strong>Problem:</strong> Correctly select the most relevant news.
-
-<strong>Solution:</strong> Filter for front page articles only. Order articles by relevance. Filter for specific sections.
-:::
-
 ::::::: columns
 :::: {.column width="50%"}
 ::: {style="display: flex; justify-content: left; align-items: center; text-align: left; margin-top: 5vh;"}
 <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
 
-<li class="fragment fade-in" data-fragment-index="2">
+<li class="fragment fade-in" data-fragment-index="1">
 
 <strong >New York Times</strong>
 
@@ -183,7 +215,7 @@ Up to 10 articles per request
 ::: {style="display: flex; justify-content: left; align-items: center; text-align: left; margin-top: 5vh;"}
 <ul style="list-style: none; padding: 0; margin: 0; line-height: 2.2em; max-width: 120vw;">
 
-<li class="fragment fade-in" data-fragment-index="2">
+<li class="fragment fade-in" data-fragment-index="1">
 
 <strong >The Guardian</strong>
 
@@ -212,13 +244,66 @@ Up to 50 articles per request
 ::::
 :::::::
 
+::: {.fragment .fade-in data-fragment-index="5" style="text-align: left; margin-top: 10vh;"}
+<p>&#8594; Requests over multiple dates to collect more data in a smaller amount of time</p>
+:::
+
+::: {.fragment .fade-in data-fragment-index="6" style="text-align: left; margin-top: 5vh;"}
+Data about:
+
+<ul style="display: flex; flex-wrap: wrap; list-style-type: none; padding: 0; margin: 0;">
+
+<li style="width: 33%; padding: 10px; box-sizing: border-box;">
+
+<ul>
+
+<li>Headline of the article</li>
+
+</ul>
+
+</li>
+
+<li style="width: 33%; padding: 10px; box-sizing: border-box;">
+
+<ul>
+
+<li>Summary of the article</li>
+
+</ul>
+
+</li>
+
+<li style="width: 33%; padding: 10px; box-sizing: border-box;">
+
+<ul>
+
+<li>URL of the article</li>
+
+</ul>
+
+</li>
+
+</ul>
+:::
+
 ------------------------------------------------------------------------
 
-## New York Times API
+## Select the most important news
 
-::: {style="text-align: center;"}
-<img src="images/dates.png" width="600"/>
+::: {.fragment .fade-in data-fragment-index="1" style="text-align: left; margin-top: 5vh;"}
+<strong>Problem:</strong> Correctly select the most relevant news.
+
+<strong>Solution:</strong> 
+<br>
+<ol style="margin-left: 60px;">
+  <li>Filter for front page articles only or filter for specific sections.</li>
+  <li>Order articles by relevance.</li>
+  <li>Group by date and select the most important.</li>
+</ol>
 :::
+
+::: {.fragment .fade-in data-fragment-index="2" style="text-align: center; margin-top: -2vh;"}
+<img src="images/dates.png" width="600"/>
 
 ```{r}
 #| echo: TRUE
@@ -233,6 +318,7 @@ news <- news |>
   ungroup() |> 
   select(-rank)
 ```
+:::
 
 ------------------------------------------------------------------------
 
