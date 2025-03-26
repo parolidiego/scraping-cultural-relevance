@@ -67,6 +67,18 @@ data <- data %>%
   mutate(across(everything(), ~ str_replace_all(.x, "<.+?>", ""))) %>%
   mutate(across(everything(), ~ if_else(.x == "NA", NA, .x)))
 
+data <- data |> 
+  select(-c("...1.x", "...1.y", rank)) |> 
+  rename("best_selling_movie" = best_selling) |> 
+  mutate(daily_earnings = as.numeric(daily_earnings),
+         worldwide_earnings = as.numeric(worldwide_earnings),
+         opening_day_earnings = as.numeric(opening_day_earnings),
+         budget = as.numeric(budget),
+         last_week = as.numeric(last_week),
+         weeks_on_chart = as.numeric(weeks_on_chart),
+         weeks_at_1 = as.numeric(weeks_at_1)
+         ) |> 
+  relocate(date, .before = everything())
 
 
 # Shiny App Interface
@@ -79,7 +91,7 @@ ui <- fluidPage(
   titlePanel("Movie, Song and News of the Day"),
   sidebarLayout(
     sidebarPanel(
-      dateInput("date", "Choose a date:", value = Sys.Date(), format = "yyyy-mm-dd", startview = "month", weekstart = 1)
+      dateInput("date", "Choose a date:", value = as.Date("2000-01-01"), format = "yyyy-mm-dd", startview = "month", weekstart = 1)
     ),
     # We set the structure of the page by creating different tabs
     mainPanel(
@@ -87,7 +99,7 @@ ui <- fluidPage(
         tabPanel("Movie",
                  h3("Most Successful Movie", class = "bold-title center-content"),
                  div(class = "image-box", uiOutput("image")),
-                 div(class = "large-title center-content", textOutput("best_selling")),
+                 div(class = "large-title center-content", textOutput("best_selling_movie")),
                  div(class = "info-box",
                      h4("Distributor", class = "bold-title"),
                      textOutput("distributor"),
@@ -97,14 +109,14 @@ ui <- fluidPage(
                      textOutput("running_time"),
                      h4("Daily Earnings", class = "bold-title"),
                      textOutput("daily_earnings"),
-                     h4("Worldwide Earnings", class = "bold-title"),
+                     h4("Worldwide Total Earnings", class = "bold-title"),
                      textOutput("world_wide_earnings"),
                      h4("Description", class = "bold-title"),
                      textOutput("description")
                  )
         ),
         tabPanel("Song",
-                 h3("Number 1 Song on Billboard", class = "bold-title center-content"),
+                 h3("Number 1 Song on Billboard Hot 100", class = "bold-title center-content"),
                  div(class = "image-box", uiOutput("image_url")),
                  div(class = "large-title center-content", textOutput("song")),
                  h4("Artist", class = "bold-title center-content"),
@@ -114,7 +126,7 @@ ui <- fluidPage(
                      textOutput("weeks_on_chart"),
                      h4("Weeks at #1", class = "bold-title"),
                      textOutput("weeks_at_1"),
-                     h4("Last Week", class = "bold-title"),
+                     h4("Previous Week", class = "bold-title"),
                      textOutput("last_week")
                  )
         ),
@@ -125,7 +137,7 @@ ui <- fluidPage(
                      div(class = "large-title", uiOutput("news_link")),
                      textOutput("subtitle")
                  ),
-                 h3("New York Times", class = "bold-title center-content"),
+                 h3("The New York Times", class = "bold-title center-content"),
                  div(class = "news-section",
                      div(class = "large-title", textOutput("headline")),
                      textOutput("lead_paragraph")
@@ -147,9 +159,9 @@ server <- function(input, output, session) {
   })
   
   # We extract the information that we need from the previous dataset
-  output$best_selling <- renderText({
+  output$best_selling_movie <- renderText({
     movie <- filtered_data()
-    if (nrow(movie) > 0) return(movie$best_selling) else return("No data available")
+    if (nrow(movie) > 0) return(movie$best_selling_movie) else return("No data available")
   })
   
   output$image <- renderUI({
@@ -176,12 +188,12 @@ server <- function(input, output, session) {
   
   output$world_wide_earnings <- renderText({
     movie <- filtered_data()
-    if (nrow(movie) > 0) return(paste("$", format(movie$worldwide_earnings, big.mark = ","))) else return("No data available")
+    if (nrow(movie) > 0) return(paste("$", format(movie$worldwide_earnings, big.mark = ",", decimal.mark = "."))) else return("No data available")
   })
   
   output$daily_earnings <- renderText({
     movie <- filtered_data()
-    if (nrow(movie) > 0) return(paste("$", format(movie$daily_earnings, big.mark = ","))) else return("No data available")
+    if (nrow(movie) > 0) return(paste("$", format(movie$daily_earnings, big.mark = ",", decimal.mark = "."))) else return("No data available")
   })
   
   output$description <- renderText({
@@ -248,3 +260,4 @@ server <- function(input, output, session) {
 
 # We execute application
 shinyApp(ui = ui, server = server)
+

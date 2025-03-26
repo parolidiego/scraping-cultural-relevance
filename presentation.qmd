@@ -245,7 +245,7 @@ Up to 50 articles per request
 :::::::
 
 ::: {.fragment .fade-in data-fragment-index="5" style="text-align: left; margin-top: 10vh;"}
-<p>&#8594; Requests over multiple dates to collect more data in a smaller amount of time</p>
+<p>→ Requests over multiple dates to collect more data in a smaller amount of time</p>
 :::
 
 ::: {.fragment .fade-in data-fragment-index="6" style="text-align: left; margin-top: 5vh;"}
@@ -293,12 +293,16 @@ Data about:
 ::: {.fragment .fade-in data-fragment-index="1" style="text-align: left; margin-top: 5vh;"}
 <strong>Problem:</strong> Correctly select the most relevant news.
 
-<strong>Solution:</strong> 
-<br>
+<strong>Solution:</strong> <br>
+
 <ol style="margin-left: 60px;">
-  <li>Filter for front page articles only or filter for specific sections.</li>
-  <li>Order articles by relevance.</li>
-  <li>Group by date and select the most important.</li>
+
+<li>Filter for front page articles only or filter for specific sections.</li>
+
+<li>Order articles by relevance.</li>
+
+<li>Group by date and select the most important.</li>
+
 </ol>
 :::
 
@@ -319,6 +323,18 @@ news <- news |>
   select(-rank)
 ```
 :::
+
+------------------------------------------------------------------------
+
+## Most successful movies
+
+![](images/top_movies.png)
+
+------------------------------------------------------------------------
+
+## Most successful songs
+
+![](images/no1_song.png)
 
 ------------------------------------------------------------------------
 
